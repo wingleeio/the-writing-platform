@@ -12,8 +12,8 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
-import { Route as DemoConvexImport } from './routes/demo.convex'
 import { Route as BookCreateImport } from './routes/book.create'
+import { Route as BookIdImport } from './routes/book.$id'
 
 // Create/Update Routes
 
@@ -23,15 +23,15 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const DemoConvexRoute = DemoConvexImport.update({
-  id: '/demo/convex',
-  path: '/demo/convex',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const BookCreateRoute = BookCreateImport.update({
   id: '/book/create',
   path: '/book/create',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const BookIdRoute = BookIdImport.update({
+  id: '/book/$id',
+  path: '/book/$id',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -46,18 +46,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/book/$id': {
+      id: '/book/$id'
+      path: '/book/$id'
+      fullPath: '/book/$id'
+      preLoaderRoute: typeof BookIdImport
+      parentRoute: typeof rootRoute
+    }
     '/book/create': {
       id: '/book/create'
       path: '/book/create'
       fullPath: '/book/create'
       preLoaderRoute: typeof BookCreateImport
-      parentRoute: typeof rootRoute
-    }
-    '/demo/convex': {
-      id: '/demo/convex'
-      path: '/demo/convex'
-      fullPath: '/demo/convex'
-      preLoaderRoute: typeof DemoConvexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -67,42 +67,42 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/book/$id': typeof BookIdRoute
   '/book/create': typeof BookCreateRoute
-  '/demo/convex': typeof DemoConvexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/book/$id': typeof BookIdRoute
   '/book/create': typeof BookCreateRoute
-  '/demo/convex': typeof DemoConvexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/book/$id': typeof BookIdRoute
   '/book/create': typeof BookCreateRoute
-  '/demo/convex': typeof DemoConvexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/book/create' | '/demo/convex'
+  fullPaths: '/' | '/book/$id' | '/book/create'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/book/create' | '/demo/convex'
-  id: '__root__' | '/' | '/book/create' | '/demo/convex'
+  to: '/' | '/book/$id' | '/book/create'
+  id: '__root__' | '/' | '/book/$id' | '/book/create'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BookIdRoute: typeof BookIdRoute
   BookCreateRoute: typeof BookCreateRoute
-  DemoConvexRoute: typeof DemoConvexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BookIdRoute: BookIdRoute,
   BookCreateRoute: BookCreateRoute,
-  DemoConvexRoute: DemoConvexRoute,
 }
 
 export const routeTree = rootRoute
@@ -116,18 +116,18 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/book/create",
-        "/demo/convex"
+        "/book/$id",
+        "/book/create"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
+    "/book/$id": {
+      "filePath": "book.$id.tsx"
+    },
     "/book/create": {
       "filePath": "book.create.tsx"
-    },
-    "/demo/convex": {
-      "filePath": "demo.convex.tsx"
     }
   }
 }

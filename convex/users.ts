@@ -5,14 +5,14 @@ import { v } from "convex/values";
 
 export const { create, destroy, update } = crud(schema, "users");
 
-export const getByWorkOSId = internalQuery({
+export const getByAuthId = internalQuery({
   args: {
-    workos_id: v.string(),
+    authId: v.string(),
   },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("users")
-      .withIndex("by_workos_id", (q) => q.eq("workos_id", args.workos_id))
+      .withIndex("by_auth_id", (q) => q.eq("authId", args.authId))
       .first();
   },
 });

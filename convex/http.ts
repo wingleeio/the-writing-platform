@@ -47,8 +47,8 @@ http.route({
 
     switch (data.event) {
       case "user.created": {
-        const user = await ctx.runQuery(internal.users.getByWorkOSId, {
-          workos_id: data.id,
+        const user = await ctx.runQuery(internal.users.getByAuthId, {
+          authId: data.id,
         });
 
         if (user) {
@@ -66,13 +66,13 @@ http.route({
         }
 
         await ctx.runMutation(internal.users.create, {
-          workos_id: data.id,
+          authId: data.id,
         });
         break;
       }
       case "user.deleted": {
-        const user = await ctx.runQuery(internal.users.getByWorkOSId, {
-          workos_id: data.id,
+        const user = await ctx.runQuery(internal.users.getByAuthId, {
+          authId: data.id,
         });
 
         if (!user?._id) {

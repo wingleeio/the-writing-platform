@@ -3,8 +3,18 @@ import { v } from "convex/values";
 
 export default defineSchema({
   users: defineTable({
-    workos_id: v.string(),
-  }).index("by_workos_id", ["workos_id"]),
+    authId: v.string(),
+  }).index("by_auth_id", ["authId"]),
+  userStats: defineTable({
+    userId: v.id("users"),
+    totalBooks: v.number(),
+    totalChapters: v.number(),
+    totalReviews: v.number(),
+    totalLikes: v.number(),
+    totalFollowers: v.number(),
+    totalFollowing: v.number(),
+    totalComments: v.number(),
+  }).index("by_user", ["userId"]),
   profiles: defineTable({
     name: v.string(),
     bio: v.string(),

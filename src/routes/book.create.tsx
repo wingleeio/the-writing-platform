@@ -1,6 +1,7 @@
 import { FormSection } from "@/components/form-section";
 import { Separator } from "@/components/ui/separator";
 import { createFileRoute } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -8,19 +9,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/image-upload";
 import { Button } from "@/components/ui/button";
 import { z } from "zod";
+import { useMutation } from "convex/react";
+import { api } from "convex/_generated/api";
+
 export const Route = createFileRoute("/book/create")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const navigate = useNavigate();
+  const createBook = useMutation(api.books.create);
   const form = useForm({
     defaultValues: {
       title: "",
       description: "",
       coverImage: "",
     },
-    onSubmit: (data) => {
-      console.log(data);
+    onSubmit: async ({ value }) => {
+      const bookId = await createBook(value);
+      await navigate({ to: "/book/$id", params: { id: bookId } });
     },
     validators: {
       onChange: z.object({
