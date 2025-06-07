@@ -40,12 +40,12 @@ http.route({
     const bodyText = await request.text();
     const sigHeader = String(request.headers.get("workos-signature"));
 
-    const data = await ctx.runAction(internal.workos.verifyWebhook, {
+    const { event, data } = await ctx.runAction(internal.workos.verifyWebhook, {
       payload: bodyText,
       signature: sigHeader,
     });
 
-    switch (data.event) {
+    switch (event) {
       case "user.created": {
         const user = await ctx.runQuery(internal.users.getByAuthId, {
           authId: data.id,
@@ -67,6 +67,14 @@ http.route({
 
         await ctx.runMutation(internal.users.create, {
           authId: data.id,
+          totalBooks: 0,
+          totalChapters: 0,
+          totalReviews: 0,
+          totalLikes: 0,
+          totalFollowers: 0,
+          totalFollowing: 0,
+          totalComments: 0,
+          totalWords: 0,
         });
         break;
       }

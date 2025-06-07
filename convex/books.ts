@@ -3,7 +3,7 @@ import { query } from "./_generated/server";
 import { mutation } from "convex/functions";
 import { v } from "convex/values";
 import { internal } from "convex/_generated/api";
-import type { Doc, Id } from "convex/_generated/dataModel";
+import type { Id } from "convex/_generated/dataModel";
 
 export const getPaginated = query({
   args: {
@@ -35,14 +35,18 @@ export const create = mutation({
       throw new Error("User not found");
     }
 
-    const bookId = await ctx.db.insert("books", {
+    return ctx.db.insert("books", {
       title: args.title,
       description: args.description,
       coverImage: args.coverImage,
       authorId: author._id,
+      totalChapters: 0,
+      totalReviews: 0,
+      totalLikes: 0,
+      totalComments: 0,
+      totalWords: 0,
+      totalFollows: 0,
     });
-
-    return bookId;
   },
 });
 

@@ -12,28 +12,52 @@ import { match } from "ts-pattern";
 
 const triggers = new Triggers<DataModel>();
 
-triggers.register("users", async (ctx, change) => {
+triggers.register("chapters", async (ctx, change) => {
   match(change)
     .with({ operation: "insert" }, async (change) => {
-      await ctx.db.insert("userStats", {
-        userId: change.newDoc._id,
-        totalBooks: 0,
-        totalChapters: 0,
-        totalReviews: 0,
-        totalLikes: 0,
-        totalFollowers: 0,
-        totalFollowing: 0,
-        totalComments: 0,
-      });
+      const book = await ctx.db.get(change.newDoc.bookId);
+      if (book) {
+        await ctx.db.patch(book._id, {
+          totalChapters: book.totalChapters + 1,
+          totalWords: book.totalWords + change.newDoc.totalWords,
+        });
+      }
+      const author = await ctx.db.get(change.newDoc.authorId);
+      if (author) {
+        await ctx.db.patch(author._id, {
+          totalChapters: author.totalChapters + 1,
+          totalWords: author.totalWords + change.newDoc.totalWords,
+        });
+      }
     })
     .with({ operation: "delete" }, async (change) => {
-      const userStats = await ctx.db
-        .query("userStats")
-        .withIndex("by_user", (q) => q.eq("userId", change.oldDoc._id))
-        .first();
-
-      if (userStats) {
-        await ctx.db.delete(userStats._id);
+      const book = await ctx.db.get(change.oldDoc.bookId);
+      if (book) {
+        await ctx.db.patch(book._id, {
+          totalChapters: book.totalChapters - 1,
+          totalWords: book.totalWords - change.oldDoc.totalWords,
+        });
+      }
+      const author = await ctx.db.get(change.oldDoc.authorId);
+      if (author) {
+        await ctx.db.patch(author._id, {
+          totalChapters: author.totalChapters - 1,
+          totalWords: author.totalWords - change.oldDoc.totalWords,
+        });
+      }
+    })
+    .with({ operation: "update" }, async (change) => {
+      const book = await ctx.db.get(change.newDoc.bookId);
+      if (book) {
+        await ctx.db.patch(book._id, {
+          totalWords: book.totalWords + change.newDoc.totalWords,
+        });
+      }
+      const author = await ctx.db.get(change.newDoc.authorId);
+      if (author) {
+        await ctx.db.patch(author._id, {
+          totalWords: author.totalWords + change.newDoc.totalWords,
+        });
       }
     })
     .run();
@@ -42,27 +66,35 @@ triggers.register("users", async (ctx, change) => {
 triggers.register("books", async (ctx, change) => {
   match(change)
     .with({ operation: "insert" }, async (change) => {
-      const userStats = await ctx.db
-        .query("userStats")
-        .withIndex("by_user", (q) => q.eq("userId", change.newDoc.authorId))
-        .first();
+      const author = await ctx.db.get(change.newDoc.authorId);
 
-      if (userStats) {
-        await ctx.db.patch(userStats._id, {
-          totalBooks: userStats.totalBooks + 1,
+      if (author) {
+        await ctx.db.patch(author._id, {
+          totalBooks: author.totalBooks + 1,
         });
       }
     })
     .with({ operation: "delete" }, async (change) => {
-      const userStats = await ctx.db
-        .query("userStats")
-        .withIndex("by_user", (q) => q.eq("userId", change.oldDoc.authorId))
-        .first();
+      const author = await ctx.db.get(change.oldDoc.authorId);
 
-      if (userStats) {
-        await ctx.db.patch(userStats._id, {
-          totalBooks: userStats.totalBooks - 1,
+      if (author) {
+        await ctx.db.patch(author._id, {
+          totalBooks: author.totalBooks - 1,
         });
+      }
+
+      for await (const chapter of await ctx.db
+        .query("chapters")
+        .withIndex("by_book", (q) => q.eq("bookId", change.oldDoc._id))
+        .collect()) {
+        await ctx.db.delete(chapter._id);
+      }
+
+      for await (const chapter of await ctx.db
+        .query("chapters")
+        .withIndex("by_book", (q) => q.eq("bookId", change.oldDoc._id))
+        .collect()) {
+        await ctx.db.delete(chapter._id);
       }
     })
     .run();

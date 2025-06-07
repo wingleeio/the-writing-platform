@@ -54,11 +54,11 @@ export const Route = createRootRoute({
           client={convexClient}
           useAuth={useAuthFromProvider}
         >
-          <div className="flex flex-col absolute inset-0 overflow-x-hidden overflow-y-auto">
+          <div className="flex flex-col fixed inset-0 overflow-x-hidden overflow-y-auto">
             <Header />
             <Outlet />
           </div>
-          <TanStackRouterDevtools />
+          {/* <TanStackRouterDevtools /> */}
         </ConvexProviderWithAuth>
       </AuthKitProvider>
     </RootDocument>

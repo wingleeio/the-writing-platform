@@ -1,9 +1,15 @@
 import { crud } from "convex-helpers/server/crud";
-import { internalQuery } from "convex/_generated/server";
+import { internalQuery, query } from "convex/_generated/server";
+import { mutation } from "convex/functions";
 import schema from "convex/schema";
 import { v } from "convex/values";
 
-export const { create, destroy, update } = crud(schema, "users");
+export const { create, destroy, update } = crud(
+  schema,
+  "users",
+  query,
+  mutation as any
+);
 
 export const getByAuthId = internalQuery({
   args: {
@@ -13,6 +19,20 @@ export const getByAuthId = internalQuery({
     return await ctx.db
       .query("users")
       .withIndex("by_auth_id", (q) => q.eq("authId", args.authId))
+      .first();
+  },
+});
+
+export const getCurrent = query({
+  args: {},
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+    return ctx.db
+      .query("users")
+      .withIndex("by_auth_id", (q) => q.eq("authId", identity.subject))
       .first();
   },
 });

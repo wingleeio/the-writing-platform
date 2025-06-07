@@ -4,9 +4,6 @@ import { v } from "convex/values";
 export default defineSchema({
   users: defineTable({
     authId: v.string(),
-  }).index("by_auth_id", ["authId"]),
-  userStats: defineTable({
-    userId: v.id("users"),
     totalBooks: v.number(),
     totalChapters: v.number(),
     totalReviews: v.number(),
@@ -14,7 +11,8 @@ export default defineSchema({
     totalFollowers: v.number(),
     totalFollowing: v.number(),
     totalComments: v.number(),
-  }).index("by_user", ["userId"]),
+    totalWords: v.number(),
+  }).index("by_auth_id", ["authId"]),
   profiles: defineTable({
     name: v.string(),
     bio: v.string(),
@@ -28,6 +26,12 @@ export default defineSchema({
     description: v.string(),
     coverImage: v.string(),
     authorId: v.id("users"),
+    totalLikes: v.number(),
+    totalComments: v.number(),
+    totalReviews: v.number(),
+    totalChapters: v.number(),
+    totalFollows: v.number(),
+    totalWords: v.number(),
   })
     .index("by_author", ["authorId"])
     .searchIndex("search_title", { searchField: "title" })
@@ -44,6 +48,9 @@ export default defineSchema({
     content: v.string(),
     bookId: v.id("books"),
     authorId: v.id("users"),
+    totalLikes: v.number(),
+    totalComments: v.number(),
+    totalWords: v.number(),
   })
     .index("by_book", ["bookId"])
     .index("by_author", ["authorId"])
