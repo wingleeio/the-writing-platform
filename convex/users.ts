@@ -24,8 +24,7 @@ export const getByAuthId = internalQuery({
 });
 
 export const getCurrent = query({
-  args: {},
-  handler: async (ctx, args) => {
+  handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       return null;

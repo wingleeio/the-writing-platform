@@ -3,7 +3,7 @@ import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { mutation } from "convex/functions";
 import { api, internal } from "convex/_generated/api";
-import type { Id } from "convex/_generated/dataModel";
+import type { Doc, Id } from "convex/_generated/dataModel";
 
 export const getPaginatedByBookId = query({
   args: {
@@ -86,5 +86,58 @@ export const getById = query({
   },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.id);
+  },
+});
+
+export const getPageDataById = query({
+  args: {
+    id: v.id("chapters"),
+  },
+  handler: async (
+    ctx,
+    args
+  ): Promise<{
+    chapters: Omit<Doc<"chapters">, "content">[];
+    chapterNumber: number;
+    prevChapterId: Id<"chapters"> | null;
+    nextChapterId: Id<"chapters"> | null;
+    bookTitle: string;
+    bookId: Id<"books">;
+    chapterTitle: string;
+    chapterContent: string;
+    chapterId: Id<"chapters">;
+  }> => {
+    const chapter = await ctx.db.get(args.id);
+    if (!chapter) {
+      throw new Error("Chapter not found");
+    }
+
+    const book = await ctx.runQuery(api.books.getById, {
+      id: chapter.bookId,
+    });
+    if (!book) {
+      throw new Error("Book not found");
+    }
+
+    const chapters = await ctx.runQuery(api.chapters.listByBookId, {
+      bookId: chapter.bookId,
+    });
+
+    const chapterNumber = chapters?.findIndex((c) => c._id === args.id) + 1;
+
+    const prevChapter = chapters?.[chapterNumber - 2];
+    const nextChapter = chapters?.[chapterNumber];
+
+    return {
+      chapters,
+      chapterNumber,
+      prevChapterId: prevChapter?._id,
+      nextChapterId: nextChapter?._id,
+      bookTitle: book?.title,
+      bookId: book._id,
+      chapterId: chapter._id,
+      chapterTitle: chapter.title,
+      chapterContent: chapter.content,
+    };
   },
 });
