@@ -2,30 +2,21 @@ import {
   Outlet,
   HeadContent,
   Scripts,
-  createRootRoute,
+  createRootRouteWithContext,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
-
 import appCss from "@/styles.css?url";
 import { Header } from "@/components/header";
-import { AuthKitProvider } from "@workos-inc/authkit-react";
-import { useAuthFromProvider } from "@/hooks/useAuthFromProvider";
+import type { ConvexQueryClient } from "@convex-dev/react-query";
+import type { QueryClient } from "@tanstack/react-query";
+import type { ConvexReactClient } from "convex/react";
 
-const CONVEX_URL = String(import.meta.env.VITE_CONVEX_URL);
-const WORKOS_CLIENT_ID = String(import.meta.env.VITE_WORKOS_CLIENT_ID);
-
-if (!CONVEX_URL) {
-  console.error("missing envar CONVEX_URL");
+interface RootContext {
+  queryClient: QueryClient;
+  convexClient: ConvexReactClient;
+  convexQueryClient: ConvexQueryClient;
 }
 
-if (!WORKOS_CLIENT_ID) {
-  console.error("missing envar WORKOS_CLIENT_ID");
-}
-
-const convexClient = new ConvexReactClient(CONVEX_URL);
-
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<RootContext>()({
   head: () => ({
     meta: [
       {
@@ -46,21 +37,10 @@ export const Route = createRootRoute({
       },
     ],
   }),
-
   component: () => (
     <RootDocument>
-      <AuthKitProvider clientId={WORKOS_CLIENT_ID}>
-        <ConvexProviderWithAuth
-          client={convexClient}
-          useAuth={useAuthFromProvider}
-        >
-          <div className="flex flex-col fixed inset-0 overflow-x-hidden overflow-y-auto">
-            <Header />
-            <Outlet />
-          </div>
-          {/* <TanStackRouterDevtools /> */}
-        </ConvexProviderWithAuth>
-      </AuthKitProvider>
+      <Header />
+      <Outlet />
     </RootDocument>
   ),
 });

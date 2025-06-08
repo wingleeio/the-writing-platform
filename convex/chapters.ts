@@ -101,6 +101,7 @@ export const getPageDataById = query({
     chapterNumber: number;
     prevChapterId: Id<"chapters"> | null;
     nextChapterId: Id<"chapters"> | null;
+    authorId: Id<"users">;
     bookTitle: string;
     bookId: Id<"books">;
     chapterTitle: string;
@@ -133,6 +134,7 @@ export const getPageDataById = query({
       chapterNumber,
       prevChapterId: prevChapter?._id,
       nextChapterId: nextChapter?._id,
+      authorId: book.authorId,
       bookTitle: book?.title,
       bookId: book._id,
       chapterId: chapter._id,

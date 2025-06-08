@@ -1,26 +1,55 @@
 import { Button } from "@/components/ui/button";
+import { convexQuery } from "@convex-dev/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
-import { useQuery } from "convex/react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { PlusIcon } from "lucide-react";
 import { match, P } from "ts-pattern";
+import { useQuery } from "convex/react";
 
 export const Route = createFileRoute("/book/$id/")({
   component: RouteComponent,
+  loader: async ({ context, params }) => {
+    await context.queryClient.ensureQueryData(
+      convexQuery(api.chapters.listByBookId, {
+        bookId: params.id as Id<"books">,
+      })
+    );
+    await context.queryClient.ensureQueryData(
+      convexQuery(api.books.getById, {
+        id: params.id as Id<"books">,
+      })
+    );
+  },
 });
+
+function useChapters() {
+  const { id: bookId } = Route.useParams();
+  return useSuspenseQuery(
+    convexQuery(api.chapters.listByBookId, {
+      bookId: bookId as Id<"books">,
+    })
+  );
+}
+
+function useBookData() {
+  const { id: bookId } = Route.useParams();
+  return useSuspenseQuery(
+    convexQuery(api.books.getById, { id: bookId as Id<"books"> })
+  );
+}
 
 function RouteComponent() {
   const { id: bookId } = Route.useParams();
-  const chapters = useQuery(api.chapters.listByBookId, {
-    bookId: bookId as Id<"books">,
-  });
+
+  const { data: chapters } = useChapters();
 
   return match(chapters)
-    .with(P.nullish, () => <EmptyState bookId={bookId as Id<"books">} />)
+    .with(P.nullish, () => <EmptyState />)
     .otherwise((chapters) =>
       match(chapters.length)
-        .with(0, () => <EmptyState bookId={bookId as Id<"books">} />)
+        .with(0, () => <EmptyState />)
         .otherwise(() => (
           <div className="overflow-y-auto overflow-x-hidden">
             {chapters.map((chapter, i) => (
@@ -51,15 +80,20 @@ function RouteComponent() {
     );
 }
 
-function EmptyState({ bookId }: { bookId: Id<"books"> }) {
+function EmptyState() {
+  const { id: bookId } = Route.useParams();
+
   const me = useQuery(api.users.getCurrent);
-  const book = useQuery(api.books.getById, { id: bookId as Id<"books"> });
+
+  const { data: book } = useBookData();
 
   return (
     <div className="p-8 items-center flex flex-col gap-4">
       <h3 className="text-muted-foreground text-sm">No published chapters</h3>
-      {match(me?._id === book?.authorId)
-        .with(true, () => (
+      {match({
+        isAuthor: me?._id === book?.authorId,
+      })
+        .with({ isAuthor: true }, () => (
           <Button variant="outline" size="sm" asChild>
             <Link to="/book/$id/create" params={{ id: bookId }}>
               <PlusIcon /> Add your first chapter

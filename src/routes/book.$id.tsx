@@ -23,14 +23,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatNumber } from "@/lib/utils";
+import { convexQuery } from "@convex-dev/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/book/$id")({
   component: RouteComponent,
+  loader: async ({ context, params }) => {
+    await context.queryClient.fetchQuery(
+      convexQuery(api.books.getById, {
+        id: params.id as Id<"books">,
+      })
+    );
+  },
 });
 
-function RouteComponent() {
+function useBookData() {
   const { id: bookId } = Route.useParams();
-  const book = useQuery(api.books.getById, { id: bookId as Id<"books"> });
+  return useSuspenseQuery(
+    convexQuery(api.books.getById, { id: bookId as Id<"books"> })
+  );
+}
+
+function RouteComponent() {
+  const { data: book } = useBookData();
 
   return match(book)
     .with(P.nullish, () => null)
@@ -38,7 +53,7 @@ function RouteComponent() {
       <div className="flex flex-col gap-8 w-full md:max-w-4xl mx-auto md:border-x flex-1">
         <div className="p-4 border-b flex items-center justify-between">
           <h2 className="text-lg font-bold">{book.title}</h2>
-          <BookActions id={bookId as Id<"books">} />
+          <BookActions />
         </div>
         <div className="px-4 flex flex-col gap-4 sm:flex-row">
           <img
@@ -52,7 +67,7 @@ function RouteComponent() {
             <h3 className="font-bold">Description</h3>
             <p className="text-sm text-muted-foreground">{book.description}</p>
             <div className="flex-1" />
-            <BookStats id={bookId as Id<"books">} />
+            <BookStats />
           </div>
         </div>
         <div>
@@ -60,7 +75,7 @@ function RouteComponent() {
             <div className="flex gap-4 bg-muted rounded-lg py-2 px-4 text-sm text-muted-foreground">
               <Link
                 to="/book/$id"
-                params={{ id: bookId }}
+                params={{ id: book._id }}
                 activeOptions={{
                   exact: true,
                 }}
@@ -72,7 +87,7 @@ function RouteComponent() {
               </Link>
               <Link
                 to="/book/$id/reviews"
-                params={{ id: bookId }}
+                params={{ id: book._id }}
                 activeOptions={{
                   exact: true,
                 }}
@@ -91,10 +106,8 @@ function RouteComponent() {
     .exhaustive();
 }
 
-function BookStats({ id }: { id: Id<"books"> }) {
-  const book = useQuery(api.books.getById, {
-    id,
-  });
+function BookStats() {
+  const { data: book } = useBookData();
 
   return match(book)
     .with(P.nullish, () => null)
@@ -140,9 +153,10 @@ function BookStats({ id }: { id: Id<"books"> }) {
     .exhaustive();
 }
 
-function BookActions({ id }: { id: Id<"books"> }) {
+function BookActions() {
   const me = useQuery(api.users.getCurrent);
-  const book = useQuery(api.books.getById, { id });
+  const { data: book } = useBookData();
+
   return match(me)
     .with(P.nullish, () => null)
     .with(P.nonNullable, (me) => (
@@ -160,19 +174,28 @@ function BookActions({ id }: { id: Id<"books"> }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {match(me._id === book?.authorId)
-              .with(true, () => (
-                <>
-                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/book/$id/create" params={{ id }}>
-                      Add Chapter
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>Delete</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
-              ))
+            {match({
+              isAuthor: me._id === book?.authorId,
+              book,
+            })
+              .with(
+                {
+                  isAuthor: true,
+                  book: P.nonNullable,
+                },
+                ({ book }) => (
+                  <>
+                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/book/$id/create" params={{ id: book._id }}>
+                        Add Chapter
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>Delete</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )
+              )
               .otherwise(() => null)}
             <DropdownMenuItem>Share</DropdownMenuItem>
             <DropdownMenuItem>Report</DropdownMenuItem>

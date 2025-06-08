@@ -35,16 +35,31 @@ import {
 } from "@/components/ui/popover";
 import { Check } from "lucide-react";
 import { useState } from "react";
+import { convexQuery } from "@convex-dev/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/book_/$id/chapter/$chapterId")({
   component: RouteComponent,
+  loader: async ({ context, params }) => {
+    await context.queryClient.fetchQuery(
+      convexQuery(api.chapters.getPageDataById, {
+        id: params.chapterId as Id<"chapters">,
+      })
+    );
+  },
 });
 
-function RouteComponent() {
+function useChapterData() {
   const { chapterId } = Route.useParams();
-  const data = useQuery(api.chapters.getPageDataById, {
-    id: chapterId as Id<"chapters">,
-  });
+  return useSuspenseQuery(
+    convexQuery(api.chapters.getPageDataById, {
+      id: chapterId as Id<"chapters">,
+    })
+  );
+}
+
+function RouteComponent() {
+  const { data } = useChapterData();
 
   return match(data)
     .with(P.nullish, () => <ChapterSkeleton />)
@@ -86,10 +101,8 @@ function RouteComponent() {
 }
 
 function ChapterSwitcher() {
-  const { chapterId } = Route.useParams();
-  const data = useQuery(api.chapters.getPageDataById, {
-    id: chapterId as Id<"chapters">,
-  });
+  const { data } = useChapterData();
+
   const [open, setOpen] = useState(false);
 
   return match(data)
@@ -178,10 +191,8 @@ function ChapterSwitcher() {
 
 function ChapterActions() {
   const me = useQuery(api.users.getCurrent);
-  const { chapterId } = Route.useParams();
-  const chapter = useQuery(api.chapters.getById, {
-    id: chapterId as Id<"chapters">,
-  });
+  const { data } = useChapterData();
+
   return match(me)
     .with(P.nullish, () => null)
     .with(P.nonNullable, (me) => (
@@ -196,7 +207,7 @@ function ChapterActions() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {match(me._id === chapter?.authorId)
+            {match(me._id === data.authorId)
               .with(true, () => (
                 <>
                   <DropdownMenuItem>Edit</DropdownMenuItem>
