@@ -3,14 +3,15 @@ import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
+  useRouteContext,
 } from "@tanstack/react-router";
 import appCss from "@/styles.css?url";
 import { Header } from "@/components/header";
 import type { ConvexQueryClient } from "@convex-dev/react-query";
-import type { QueryClient } from "@tanstack/react-query";
-import type { ConvexReactClient } from "convex/react";
+import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
+import { ConvexProviderWithAuth, type ConvexReactClient } from "convex/react";
 import { ensureCurrentUser } from "@/hooks/useCurrentUser";
-import { ensureAuth } from "@/hooks/useAuthFromProvider";
+import { ensureAuth, useAuthFromProvider } from "@/hooks/useAuthFromProvider";
 export interface RootContext {
   queryClient: QueryClient;
   convexClient: ConvexReactClient;
@@ -63,12 +64,22 @@ export const Route = createRootRouteWithContext<RootContext>()({
     await ensureAuth(context);
     await ensureCurrentUser(context);
   },
-  component: () => (
-    <RootDocument>
-      <Header />
-      <Outlet />
-    </RootDocument>
-  ),
+  component: () => {
+    const context = useRouteContext({ from: "__root__" });
+    return (
+      <RootDocument>
+        <QueryClientProvider client={context.queryClient}>
+          <ConvexProviderWithAuth
+            client={context.convexClient}
+            useAuth={useAuthFromProvider}
+          >
+            <Header />
+            <Outlet />
+          </ConvexProviderWithAuth>
+        </QueryClientProvider>
+      </RootDocument>
+    );
+  },
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {

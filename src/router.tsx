@@ -4,9 +4,8 @@ import { routeTree } from "./routeTree.gen";
 
 import "./styles.css";
 import { ConvexQueryClient } from "@convex-dev/react-query";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
-import { useAuthFromProvider } from "@/hooks/useAuthFromProvider";
+import { QueryClient } from "@tanstack/react-query";
+import { ConvexReactClient } from "convex/react";
 import { AuthKitProvider } from "@workos-inc/authkit-react";
 
 export const createRouter = () => {
@@ -46,14 +45,7 @@ export const createRouter = () => {
     Wrap(props) {
       return (
         <AuthKitProvider clientId={WORKOS_CLIENT_ID}>
-          <QueryClientProvider client={queryClient}>
-            <ConvexProviderWithAuth
-              client={convexClient}
-              useAuth={useAuthFromProvider}
-            >
-              {props.children}
-            </ConvexProviderWithAuth>
-          </QueryClientProvider>
+          {props.children}
         </AuthKitProvider>
       );
     },
