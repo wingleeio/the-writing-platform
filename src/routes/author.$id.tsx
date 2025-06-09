@@ -15,14 +15,39 @@ import { formatNumber, generateUsername } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "convex/react";
+import { convexQuery } from "@convex-dev/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { ensureAuth } from "@/hooks/useAuthFromProvider";
+import { ensureCurrentUser } from "@/hooks/useCurrentUser";
 
 export const Route = createFileRoute("/author/$id")({
   component: RouteComponent,
+  loader: async ({ context, params }) => {
+    await ensureAuth(context);
+    await ensureCurrentUser(context);
+    const author = await context.queryClient.fetchQuery(
+      convexQuery(api.users.getById, { id: params.id as Id<"users"> })
+    );
+    return { author };
+  },
+  head: ({ loaderData }) => ({
+    meta: [
+      {
+        title: `${loaderData?.author.profile?.username ?? generateUsername(loaderData?.author._id!)} | The Writing Platform`,
+      },
+    ],
+  }),
 });
 
-function RouteComponent() {
+function useAuthor() {
   const { id } = Route.useParams();
-  const author = useQuery(api.users.getById, { id: id as Id<"users"> });
+  return useSuspenseQuery(
+    convexQuery(api.users.getById, { id: id as Id<"users"> })
+  );
+}
+
+function RouteComponent() {
+  const { data: author } = useAuthor();
   const me = useQuery(api.users.getCurrent);
   const toggleFollow = useMutation(api.users.toggleFollow);
 

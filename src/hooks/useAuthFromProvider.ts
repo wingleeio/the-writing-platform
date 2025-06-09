@@ -1,4 +1,3 @@
-import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { getAccessToken } from "@/lib/auth";
 import type { RootContext } from "@/routes/__root";
 import { useQuery } from "@tanstack/react-query";
