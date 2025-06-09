@@ -7,7 +7,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <div className="flex flex-col gap-8 w-full md:max-w-4xl mx-auto flex-1 border-x">
+    <div className="flex flex-col gap-8 w-full md:max-w-4xl mx-auto flex-1 md:border-x">
       <ActivityFeed />
     </div>
   );
