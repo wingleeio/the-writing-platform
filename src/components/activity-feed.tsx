@@ -150,7 +150,7 @@ export function ActivityFeed({ authorId }: { authorId?: Id<"users"> }) {
                           >
                             {book.title}
                           </Link>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                             {book.description}
                           </p>
                           <div className="flex gap-4 text-sm text-muted-foreground">
