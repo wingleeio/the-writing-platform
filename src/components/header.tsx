@@ -41,7 +41,7 @@ function UserMenu() {
         Login
       </Button>
     ))
-    .with({ user: P.nonNullable }, ({ user, signOut }) => (
+    .with({ user: P.nonNullable }, ({ signOut }) => (
       <div className="flex flex-row gap-4 items-center">
         <Button variant="outline" className="relative" size="sm" asChild>
           <Link to="/book/create">

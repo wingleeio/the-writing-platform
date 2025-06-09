@@ -3,7 +3,14 @@ import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
 import type { Doc, Id } from "convex/_generated/dataModel";
 import { match, P } from "ts-pattern";
-import { BookOpen, Star, Heart, MessageSquare, Users } from "lucide-react";
+import {
+  BookOpen,
+  Star,
+  Heart,
+  MessageSquare,
+  Users,
+  FileText,
+} from "lucide-react";
 import { formatNumber, generateUsername } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -105,24 +112,28 @@ function AuthorStats({
   author: Doc<"users"> & { followedByMe: boolean };
 }) {
   return (
-    <div className="flex gap-4 text-sm text-muted-foreground">
-      <div className="flex items-center gap-1">
+    <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+      <div className="flex items-center gap-1.5">
         <BookOpen className="w-4 h-4" />
         <span>{formatNumber(author.totalBooks)} books</span>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5">
+        <FileText className="w-4 h-4" />
+        <span>{formatNumber(author.totalWords)} words</span>
+      </div>
+      <div className="flex items-center gap-1.5">
         <Star className="w-4 h-4" />
         <span>{formatNumber(author.totalReviews)} reviews</span>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5">
         <Heart className="w-4 h-4" />
         <span>{formatNumber(author.totalLikes)} likes</span>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5">
         <MessageSquare className="w-4 h-4" />
         <span>{formatNumber(author.totalComments)} comments</span>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5">
         <Users className="w-4 h-4" />
         <span>{formatNumber(author.totalFollowers)} followers</span>
       </div>
