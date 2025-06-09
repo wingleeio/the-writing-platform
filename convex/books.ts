@@ -73,3 +73,15 @@ export const getById = query({
     };
   },
 });
+
+export const getByAuthorId = query({
+  args: {
+    authorId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("books")
+      .withIndex("by_author", (q) => q.eq("authorId", args.authorId))
+      .collect();
+  },
+});

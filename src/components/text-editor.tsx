@@ -129,6 +129,7 @@ export function CommentEditor(props: {
   onChange?: (content: string) => void;
   onSubmit?: () => Promise<void>;
   onSubmitEnabled?: boolean;
+  submitButtonText?: string;
 }) {
   const editor = useEditor({
     extensions: [
@@ -201,7 +202,7 @@ export function CommentEditor(props: {
           className="mr-2"
           disabled={!props.onSubmitEnabled}
         >
-          Comment
+          {props.submitButtonText || "Comment"}
         </Button>
       </div>
     </div>

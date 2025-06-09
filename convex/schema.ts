@@ -6,7 +6,7 @@ export default defineSchema({
     profile: v.optional(
       v.object({
         username: v.string(),
-        profilePicture: v.id("_storage"),
+        profilePicture: v.optional(v.string()),
         bio: v.string(),
       })
     ),
@@ -30,6 +30,24 @@ export default defineSchema({
     .index("by_total_following", ["totalFollowing"])
     .index("by_total_comments", ["totalComments"])
     .index("by_total_words", ["totalWords"]),
+  activities: defineTable({
+    type: v.union(
+      v.literal("PublishBook"),
+      v.literal("PublishChapter"),
+      v.literal("PublishComment"),
+      v.literal("PublishReview")
+    ),
+    bookId: v.id("books"),
+    authorId: v.id("users"),
+    chapterId: v.optional(v.id("chapters")),
+    commentId: v.optional(v.id("comments")),
+    reviewId: v.optional(v.id("reviews")),
+  })
+    .index("by_author", ["authorId"])
+    .index("by_book", ["bookId"])
+    .index("by_chapter", ["chapterId"])
+    .index("by_comment", ["commentId"])
+    .index("by_review", ["reviewId"]),
   books: defineTable({
     title: v.string(),
     description: v.string(),

@@ -1,14 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ActivityFeed } from "@/components/activity-feed";
 
 export const Route = createFileRoute("/")({
-  component: App,
+  component: Index,
 });
 
-function App() {
-  // const { results, status } = usePaginatedQuery(
-  //   api.books.getPaginated,
-  //   {},
-  //   { initialNumItems: 10 }
-  // );
-  return <div className="p-3"></div>;
+function Index() {
+  return <ActivityFeed />;
 }

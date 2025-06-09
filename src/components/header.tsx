@@ -64,10 +64,13 @@ function UserMenu() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Notifications</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-
+            {me && (
+              <DropdownMenuItem asChild>
+                <Link to="/author/$id" params={{ id: me?._id }}>
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => signOut()}>
               Logout

@@ -37,7 +37,7 @@ import { Check } from "lucide-react";
 import { useState } from "react";
 import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { formatNumber, generateUsername } from "@/lib/utils";
+import { cn, formatNumber, generateUsername } from "@/lib/utils";
 import { CommentEditor } from "@/components/text-editor";
 import { useForm } from "@tanstack/react-form";
 import z from "zod";
@@ -220,13 +220,20 @@ function ChapterSwitcher() {
 function ChapterActions() {
   const me = useQuery(api.users.getCurrent);
   const { data } = useChapterData();
-
+  const toggleLike = useMutation(api.chapters.toggleLike);
   return match(me)
     .with(P.nullish, () => null)
     .with(P.nonNullable, (me) => (
       <div className="flex gap-4">
-        <Button size="sm" variant="outline">
-          <Heart />
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => toggleLike({ chapterId: data.chapterId })}
+        >
+          <Heart
+            className={cn(data.likedByMe && "text-red-500 fill-red-500")}
+          />
+          {formatNumber(data.totalLikes)}
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -337,8 +344,10 @@ function CommentList() {
 function CommentItem({
   comment,
 }: {
-  comment: Doc<"comments"> & { author: Doc<"users"> };
+  comment: Doc<"comments"> & { author: Doc<"users">; likedByMe: boolean };
 }) {
+  const toggleLike = useMutation(api.comments.toggleLike);
+
   return (
     <>
       <div className="px-4">
@@ -352,7 +361,7 @@ function CommentItem({
               ).slice(0, 1)}
             </AvatarFallback>
           </Avatar>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <Link
                 to="/author/$id"
@@ -376,6 +385,21 @@ function CommentItem({
               className="prose-sm"
               dangerouslySetInnerHTML={{ __html: comment.content }}
             />
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => toggleLike({ commentId: comment._id })}
+              >
+                <Heart
+                  className={cn(
+                    comment.likedByMe && "text-red-500 fill-red-500",
+                    "h-2 w-2"
+                  )}
+                />{" "}
+                {formatNumber(comment.totalLikes)}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

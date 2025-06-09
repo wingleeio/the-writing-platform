@@ -11,7 +11,6 @@ import {
   MessageSquare,
   FileText,
   Users,
-  PlusIcon,
   MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -180,12 +179,6 @@ function BookActions() {
     .with(P.nullish, () => null)
     .with(P.nonNullable, (me) => (
       <div className="flex gap-4">
-        <Button size="sm" variant="outline">
-          <Heart />
-        </Button>
-        <Button size="sm" variant="outline">
-          <PlusIcon /> Follow
-        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm">

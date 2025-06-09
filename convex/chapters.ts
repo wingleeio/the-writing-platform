@@ -36,6 +36,49 @@ export const listByBookId = query({
   },
 });
 
+export const toggleLike = mutation({
+  args: {
+    chapterId: v.id("chapters"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    const chapter = await ctx.db.get(args.chapterId);
+
+    if (!chapter) {
+      throw new Error("Chapter not found");
+    }
+
+    const user = await ctx.runQuery(internal.users.getByAuthId, {
+      authId: identity.subject,
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const chapterLike = await ctx.db
+      .query("chapterLikes")
+      .withIndex("by_user_chapter", (q) =>
+        q.eq("userId", user._id).eq("chapterId", args.chapterId)
+      )
+      .first();
+
+    if (chapterLike) {
+      await ctx.db.delete(chapterLike._id);
+    } else {
+      await ctx.db.insert("chapterLikes", {
+        userId: user._id,
+        chapterId: args.chapterId,
+      });
+    }
+  },
+});
+
 export const create = mutation({
   args: {
     bookId: v.id("books"),
@@ -112,9 +155,18 @@ export const getPageDataById = query({
     chapterId: Id<"chapters">;
     comments: (Doc<"comments"> & {
       author: Doc<"users">;
+      likedByMe: boolean;
     })[];
     totalComments: number;
+    likedByMe: boolean;
+    totalLikes: number;
   }> => {
+    const identity = await ctx.auth.getUserIdentity();
+    const me = identity
+      ? await ctx.runQuery(internal.users.getByAuthId, {
+          authId: identity.subject,
+        })
+      : null;
     const chapter = await ctx.db.get(args.id);
     if (!chapter) {
       throw new Error("Chapter not found");
@@ -142,6 +194,14 @@ export const getPageDataById = query({
             return {
               ...comment,
               author,
+              likedByMe: me
+                ? (await ctx.db
+                    .query("commentLikes")
+                    .withIndex("by_user_comment", (q) =>
+                      q.eq("userId", me._id).eq("commentId", comment._id)
+                    )
+                    .first()) !== null
+                : false,
             };
           })
         );
@@ -159,6 +219,15 @@ export const getPageDataById = query({
     const prevChapter = chapters?.[chapterNumber - 2];
     const nextChapter = chapters?.[chapterNumber];
 
+    const likedByMe = me
+      ? (await ctx.db
+          .query("chapterLikes")
+          .withIndex("by_user_chapter", (q) =>
+            q.eq("userId", me._id).eq("chapterId", chapter._id)
+          )
+          .first()) !== null
+      : false;
+
     return {
       chapters,
       chapterNumber,
@@ -172,6 +241,8 @@ export const getPageDataById = query({
       chapterContent: chapter.content,
       comments,
       totalComments: chapter.totalComments,
+      likedByMe,
+      totalLikes: chapter.totalLikes,
     };
   },
 });

@@ -46,3 +46,48 @@ export const create = mutation({
     return commentId;
   },
 });
+
+export const toggleLike = mutation({
+  args: {
+    commentId: v.id("comments"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    const comment = await ctx.db.get(args.commentId);
+
+    if (!comment) {
+      throw new Error("Comment not found");
+    }
+
+    const user = await ctx.runQuery(internal.users.getByAuthId, {
+      authId: identity.subject,
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const commentLike = await ctx.db
+      .query("commentLikes")
+      .withIndex("by_user_comment", (q) =>
+        q.eq("userId", user._id).eq("commentId", args.commentId)
+      )
+      .first();
+
+    if (commentLike) {
+      await ctx.db.delete(commentLike._id);
+    } else {
+      await ctx.db.insert("commentLikes", {
+        userId: user._id,
+        commentId: args.commentId,
+      });
+    }
+
+    return null;
+  },
+});
