@@ -35,6 +35,27 @@ export const Route = createFileRoute("/author/$id")({
       {
         title: `${loaderData?.author.profile?.username ?? generateUsername(loaderData?.author._id!)} | The Writing Platform`,
       },
+      {
+        property: "og:title",
+        content: `${loaderData?.author.profile?.username ?? generateUsername(loaderData?.author._id!)} | The Writing Platform`,
+      },
+      {
+        property: "og:type",
+        content: "profile",
+      },
+      {
+        property: "og:description",
+        content:
+          loaderData?.author.profile?.bio ?? "Author on The Writing Platform",
+      },
+      {
+        property: "og:image",
+        content: loaderData?.author.profile?.profilePicture,
+      },
+      {
+        property: "og:site_name",
+        content: "The Writing Platform",
+      },
     ],
   }),
 });

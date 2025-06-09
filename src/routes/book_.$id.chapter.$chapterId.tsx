@@ -67,6 +67,22 @@ export const Route = createFileRoute("/book_/$id/chapter/$chapterId")({
       {
         title: `${loaderData?.chapterNumber}. ${loaderData?.chapterTitle} | ${loaderData?.bookTitle}`,
       },
+      {
+        property: "og:title",
+        content: `${loaderData?.chapterNumber}. ${loaderData?.chapterTitle} | ${loaderData?.bookTitle}`,
+      },
+      {
+        property: "og:type",
+        content: "article",
+      },
+      {
+        property: "og:description",
+        content: `${loaderData?.chapterTitle} - Chapter ${loaderData?.chapterNumber} of ${loaderData?.bookTitle}`,
+      },
+      {
+        property: "og:site_name",
+        content: "The Writing Platform",
+      },
     ],
   }),
 });

@@ -30,6 +30,23 @@ export const Route = createRootRouteWithContext<RootContext>()({
       {
         title: "The Writing Platform",
       },
+      {
+        property: "og:title",
+        content: "The Writing Platform",
+      },
+      {
+        property: "og:type",
+        content: "website",
+      },
+      {
+        property: "og:description",
+        content:
+          "A platform for writers to share their stories and connect with readers.",
+      },
+      {
+        property: "og:site_name",
+        content: "The Writing Platform",
+      },
     ],
     links: [
       {
