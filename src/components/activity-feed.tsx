@@ -75,7 +75,7 @@ export function ActivityFeed({ authorId }: { authorId?: Id<"users"> }) {
 
   if (isLoading && results.length === 0) {
     return (
-      <div className="flex flex-col gap-8 w-full md:max-w-4xl mx-auto md:border-x flex-1">
+      <div className="flex flex-col gap-8 w-full md:max-w-4xl mx-auto flex-1">
         {!authorId ? (
           <div className="p-4 border-b flex items-center justify-between">
             <h2 className="text-lg font-bold">Recent Activity</h2>
@@ -94,7 +94,7 @@ export function ActivityFeed({ authorId }: { authorId?: Id<"users"> }) {
   }
 
   return (
-    <div className="flex flex-col gap-8 w-full md:max-w-4xl mx-auto md:border-x flex-1">
+    <div className="flex flex-col gap-8 w-full md:max-w-4xl mx-auto flex-1">
       {!authorId ? (
         <div className="p-4 border-b flex items-center justify-between">
           <h2 className="text-lg font-bold">Recent Activity</h2>
