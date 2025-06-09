@@ -11,11 +11,16 @@ export const getActivities = query({
   },
   handler: async (ctx, args) => {
     const { authorId, paginationOpts } = args;
-    return ctx.db
-      .query("activities")
-      .withIndex("by_author", (q) =>
-        authorId ? q.eq("authorId", authorId) : q
-      )
+
+    const base = authorId
+      ? ctx.db
+          .query("activities")
+          .withIndex("by_author", (q) =>
+            authorId ? q.eq("authorId", authorId) : q
+          )
+      : ctx.db.query("activities");
+
+    return base
       .order("desc")
       .paginate(paginationOpts)
       .then(async (data) => {
