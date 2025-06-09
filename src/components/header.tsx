@@ -8,8 +8,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { generateUsername } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "@workos-inc/authkit-react";
+import { api } from "convex/_generated/api";
+import { useQuery } from "convex/react";
 import { PlusIcon } from "lucide-react";
 import { match, P } from "ts-pattern";
 
@@ -30,6 +33,7 @@ export function Header() {
 
 function UserMenu() {
   const auth = useAuth();
+  const me = useQuery(api.users.getCurrent);
 
   return match(auth)
     .with({ user: P.nullish }, ({ signIn }) => (
@@ -48,8 +52,13 @@ function UserMenu() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative w-8 h-8 rounded-full">
               <Avatar>
-                <AvatarImage src={user.profilePictureUrl ?? undefined} />
-                <AvatarFallback>CN</AvatarFallback>
+                <AvatarImage src={me?.profile?.profilePicture ?? undefined} />
+                <AvatarFallback>
+                  {me &&
+                    (me?.profile?.username ?? generateUsername(me?._id))
+                      .slice(0, 1)
+                      .toUpperCase()}
+                </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>

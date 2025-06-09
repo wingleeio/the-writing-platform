@@ -73,7 +73,7 @@ export const create = mutation({
       bookId: args.bookId,
       title: args.title,
       content: sanitizeHtml(args.content, {
-        allowedTags: ["b", "i", "u", "s", "strike", "p"],
+        allowedTags: ["b", "i", "u", "s", "strike", "p", "strong", "em", "br"],
       }),
       authorId: author._id,
       totalLikes: 0,
@@ -110,7 +110,9 @@ export const getPageDataById = query({
     chapterTitle: string;
     chapterContent: string;
     chapterId: Id<"chapters">;
-    comments: (Doc<"comments"> & { children: Doc<"comments">[] })[];
+    comments: (Doc<"comments"> & {
+      author: Doc<"users">;
+    })[];
     totalComments: number;
   }> => {
     const chapter = await ctx.db.get(args.id);
@@ -132,18 +134,19 @@ export const getPageDataById = query({
         q.eq("chapterId", args.id).eq("parentId", undefined)
       )
       .collect()
-      .then((comments) => {
-        return Promise.all(
+      .then(async (comments) => {
+        const commentsWithAuthors = await Promise.all(
           comments.map(async (comment) => {
+            const author = await ctx.db.get(comment.authorId);
+            if (!author) return null;
             return {
               ...comment,
-              author: await ctx.db.get(comment.authorId),
-              children: await ctx.db
-                .query("comments")
-                .withIndex("by_parent", (q) => q.eq("parentId", comment._id))
-                .collect(),
+              author,
             };
           })
+        );
+        return commentsWithAuthors.filter(
+          (comment): comment is NonNullable<typeof comment> => comment !== null
         );
       });
 

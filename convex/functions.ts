@@ -12,6 +12,25 @@ import { match } from "ts-pattern";
 
 const triggers = new Triggers<DataModel>();
 
+triggers.register("comments", async (ctx, change) => {
+  match(change)
+    .with({ operation: "insert" }, async (change) => {
+      const book = await ctx.db.get(change.newDoc.bookId);
+      if (book) {
+        await ctx.db.patch(book._id, {
+          totalComments: book.totalComments + 1,
+        });
+      }
+      const chapter = await ctx.db.get(change.newDoc.chapterId);
+      if (chapter) {
+        await ctx.db.patch(chapter._id, {
+          totalComments: chapter.totalComments + 1,
+        });
+      }
+    })
+    .run();
+});
+
 triggers.register("chapters", async (ctx, change) => {
   match(change)
     .with({ operation: "insert" }, async (change) => {

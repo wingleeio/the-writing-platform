@@ -15,6 +15,7 @@ import type {
 } from "convex/server";
 import type * as books from "../books.js";
 import type * as chapters from "../chapters.js";
+import type * as comments from "../comments.js";
 import type * as functions from "../functions.js";
 import type * as http from "../http.js";
 import type * as upload from "../upload.js";
@@ -32,6 +33,7 @@ import type * as workos from "../workos.js";
 declare const fullApi: ApiFromModules<{
   books: typeof books;
   chapters: typeof chapters;
+  comments: typeof comments;
   functions: typeof functions;
   http: typeof http;
   upload: typeof upload;

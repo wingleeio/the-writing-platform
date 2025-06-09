@@ -81,6 +81,7 @@ export default defineSchema({
     parentId: v.optional(v.id("comments")),
     authorId: v.id("users"),
     isDeleted: v.boolean(),
+    totalLikes: v.number(),
   })
     .index("by_book", ["bookId"])
     .index("by_chapter", ["chapterId"])
@@ -122,4 +123,11 @@ export default defineSchema({
     .index("by_user_review", ["userId", "reviewId"])
     .index("by_user", ["userId"])
     .index("by_review", ["reviewId"]),
+  commentLikes: defineTable({
+    userId: v.id("users"),
+    commentId: v.id("comments"),
+  })
+    .index("by_user_comment", ["userId", "commentId"])
+    .index("by_user", ["userId"])
+    .index("by_comment", ["commentId"]),
 });

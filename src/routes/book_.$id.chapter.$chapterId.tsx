@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import type { Doc, Id } from "convex/_generated/dataModel";
 import { match, P } from "ts-pattern";
 import { Separator } from "@/components/ui/separator";
@@ -37,8 +37,11 @@ import { Check } from "lucide-react";
 import { useState } from "react";
 import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { formatNumber } from "@/lib/utils";
+import { formatNumber, generateUsername } from "@/lib/utils";
 import { CommentEditor } from "@/components/text-editor";
+import { useForm } from "@tanstack/react-form";
+import z from "zod";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const Route = createFileRoute("/book_/$id/chapter/$chapterId")({
   component: RouteComponent,
@@ -262,13 +265,54 @@ function CommentHeader() {
     </div>
   );
 }
+
 function CommentForm() {
   const me = useQuery(api.users.getCurrent);
+  const { data } = useChapterData();
+  const createComment = useMutation(api.comments.create);
+  const form = useForm({
+    defaultValues: {
+      content: "",
+    },
+    defaultState: {
+      canSubmit: false,
+      isSubmitting: false,
+    },
+    onSubmit: async ({ value }) => {
+      await createComment({
+        chapterId: data.chapterId,
+        content: value.content,
+      });
+    },
+    validators: {
+      onChange: z.object({
+        content: z.string().min(10),
+      }),
+    },
+  });
+
   return match(me)
     .with(P.nullish, () => null)
     .with(P.nonNullable, () => (
       <>
-        <CommentEditor placeholder="Add a comment..." />
+        <form.Subscribe
+          selector={(state) => [state.canSubmit, state.isSubmitting]}
+          children={([canSubmit, isSubmitting]) => (
+            <form.Field
+              name="content"
+              children={(field) => (
+                <div className="px-4">
+                  <CommentEditor
+                    placeholder="Add a comment..."
+                    onChange={(content) => field.handleChange(content)}
+                    onSubmit={form.handleSubmit}
+                    onSubmitEnabled={canSubmit && !isSubmitting}
+                  />
+                </div>
+              )}
+            />
+          )}
+        />
         <Separator />
       </>
     ))
@@ -293,7 +337,49 @@ function CommentList() {
 function CommentItem({
   comment,
 }: {
-  comment: Doc<"comments"> & { children: Doc<"comments">[] };
+  comment: Doc<"comments"> & { author: Doc<"users"> };
 }) {
-  return <div>{comment.content}</div>;
+  return (
+    <>
+      <div className="px-4">
+        <div className="flex gap-4">
+          <Avatar>
+            <AvatarImage src={comment.author.profile?.profilePicture} />
+            <AvatarFallback className="text-xs uppercase">
+              {(
+                comment.author.profile?.username ??
+                generateUsername(comment.author._id)
+              ).slice(0, 1)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Link
+                to="/author/$id"
+                params={{ id: comment.author._id }}
+                className="text-sm underline"
+              >
+                {comment.author.profile?.username ??
+                  generateUsername(comment.author._id)}
+              </Link>
+              <p className="text-sm text-muted-foreground">
+                {new Date(comment._creationTime).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            </div>
+            <p
+              className="prose-sm"
+              dangerouslySetInnerHTML={{ __html: comment.content }}
+            />
+          </div>
+        </div>
+      </div>
+      <Separator />
+    </>
+  );
 }

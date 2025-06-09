@@ -127,7 +127,7 @@ export function CommentEditor(props: {
   initialValue?: string;
   placeholder?: string;
   onChange?: (content: string) => void;
-  onSubmit?: () => void;
+  onSubmit?: () => Promise<void>;
   onSubmitEnabled?: boolean;
 }) {
   const editor = useEditor({
@@ -194,7 +194,10 @@ export function CommentEditor(props: {
         <div className="flex-1" />
         <Button
           size="sm"
-          onClick={props.onSubmit}
+          onClick={async () => {
+            await props.onSubmit?.();
+            editor.commands.setContent("");
+          }}
           className="mr-2"
           disabled={!props.onSubmitEnabled}
         >
