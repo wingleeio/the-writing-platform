@@ -198,7 +198,7 @@ export function ActivityFeed({ authorId }: { authorId?: Id<"users"> }) {
                         <ImageWithLoading
                           src={book.coverImage}
                           alt={book.title}
-                          className="w-16 h-24 object-cover rounded"
+                          className="w-16 h-24 object-cover rounded flex-shrink-0"
                         />
                         <div className="flex flex-col gap-2">
                           <Link
@@ -277,7 +277,7 @@ export function ActivityFeed({ authorId }: { authorId?: Id<"users"> }) {
                         <ImageWithLoading
                           src={book.coverImage}
                           alt={book.title}
-                          className="w-16 h-24 object-cover rounded"
+                          className="w-16 h-24 object-cover rounded flex-shrink-0"
                         />
                         <div className="flex flex-col gap-2">
                           <Link
@@ -355,7 +355,7 @@ export function ActivityFeed({ authorId }: { authorId?: Id<"users"> }) {
                         <ImageWithLoading
                           src={book.coverImage}
                           alt={book.title}
-                          className="w-16 h-24 object-cover rounded"
+                          className="w-16 h-24 object-cover rounded flex-shrink-0"
                         />
                         <div className="flex flex-col gap-2">
                           <Link
@@ -422,7 +422,7 @@ export function ActivityFeed({ authorId }: { authorId?: Id<"users"> }) {
                         <ImageWithLoading
                           src={book.coverImage}
                           alt={book.title}
-                          className="w-16 h-24 object-cover rounded"
+                          className="w-16 h-24 object-cover rounded flex-shrink-0"
                         />
                         <div className="flex flex-col gap-2">
                           <Link
