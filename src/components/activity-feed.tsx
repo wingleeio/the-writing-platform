@@ -195,11 +195,13 @@ export function ActivityFeed({ authorId }: { authorId?: Id<"users"> }) {
                         </p>
                       </div>
                       <div className="flex gap-4">
-                        <ImageWithLoading
-                          src={book.coverImage}
-                          alt={book.title}
-                          className="w-16 h-24 object-cover rounded flex-shrink-0"
-                        />
+                        <div className="flex-shrink-0">
+                          <ImageWithLoading
+                            src={book.coverImage}
+                            alt={book.title}
+                            className="w-16 h-24 object-cover rounded"
+                          />
+                        </div>
                         <div className="flex flex-col gap-2">
                           <Link
                             to="/book/$id"
@@ -274,11 +276,13 @@ export function ActivityFeed({ authorId }: { authorId?: Id<"users"> }) {
                         </p>
                       </div>
                       <div className="flex gap-4">
-                        <ImageWithLoading
-                          src={book.coverImage}
-                          alt={book.title}
-                          className="w-16 h-24 object-cover rounded flex-shrink-0"
-                        />
+                        <div className="flex-shrink-0">
+                          <ImageWithLoading
+                            src={book.coverImage}
+                            alt={book.title}
+                            className="w-16 h-24 object-cover rounded"
+                          />
+                        </div>
                         <div className="flex flex-col gap-2">
                           <Link
                             to="/book/$id/chapter/$chapterId"
@@ -352,11 +356,13 @@ export function ActivityFeed({ authorId }: { authorId?: Id<"users"> }) {
                         </p>
                       </div>
                       <div className="flex gap-4">
-                        <ImageWithLoading
-                          src={book.coverImage}
-                          alt={book.title}
-                          className="w-16 h-24 object-cover rounded flex-shrink-0"
-                        />
+                        <div className="flex-shrink-0">
+                          <ImageWithLoading
+                            src={book.coverImage}
+                            alt={book.title}
+                            className="w-16 h-24 object-cover rounded"
+                          />
+                        </div>
                         <div className="flex flex-col gap-2">
                           <Link
                             to="/book/$id/chapter/$chapterId"
@@ -419,11 +425,13 @@ export function ActivityFeed({ authorId }: { authorId?: Id<"users"> }) {
                         </p>
                       </div>
                       <div className="flex gap-4">
-                        <ImageWithLoading
-                          src={book.coverImage}
-                          alt={book.title}
-                          className="w-16 h-24 object-cover rounded flex-shrink-0"
-                        />
+                        <div className="flex-shrink-0">
+                          <ImageWithLoading
+                            src={book.coverImage}
+                            alt={book.title}
+                            className="w-16 h-24 object-cover rounded"
+                          />
+                        </div>
                         <div className="flex flex-col gap-2">
                           <Link
                             to="/book/$id"
