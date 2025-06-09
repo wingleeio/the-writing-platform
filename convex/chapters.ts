@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { mutation } from "convex/functions";
 import { api, internal } from "convex/_generated/api";
 import type { Doc, Id } from "convex/_generated/dataModel";
+import sanitizeHtml from "sanitize-html";
 
 export const getPaginatedByBookId = query({
   args: {
@@ -71,7 +72,9 @@ export const create = mutation({
     return ctx.db.insert("chapters", {
       bookId: args.bookId,
       title: args.title,
-      content: args.content,
+      content: sanitizeHtml(args.content, {
+        allowedTags: ["b", "i", "u", "s", "strike", "p"],
+      }),
       authorId: author._id,
       totalLikes: 0,
       totalComments: 0,
@@ -107,6 +110,8 @@ export const getPageDataById = query({
     chapterTitle: string;
     chapterContent: string;
     chapterId: Id<"chapters">;
+    comments: (Doc<"comments"> & { children: Doc<"comments">[] })[];
+    totalComments: number;
   }> => {
     const chapter = await ctx.db.get(args.id);
     if (!chapter) {
@@ -116,9 +121,31 @@ export const getPageDataById = query({
     const book = await ctx.runQuery(api.books.getById, {
       id: chapter.bookId,
     });
+
     if (!book) {
       throw new Error("Book not found");
     }
+
+    const comments = await ctx.db
+      .query("comments")
+      .withIndex("by_chapter_parent", (q) =>
+        q.eq("chapterId", args.id).eq("parentId", undefined)
+      )
+      .collect()
+      .then((comments) => {
+        return Promise.all(
+          comments.map(async (comment) => {
+            return {
+              ...comment,
+              author: await ctx.db.get(comment.authorId),
+              children: await ctx.db
+                .query("comments")
+                .withIndex("by_parent", (q) => q.eq("parentId", comment._id))
+                .collect(),
+            };
+          })
+        );
+      });
 
     const chapters = await ctx.runQuery(api.chapters.listByBookId, {
       bookId: chapter.bookId,
@@ -140,6 +167,8 @@ export const getPageDataById = query({
       chapterId: chapter._id,
       chapterTitle: chapter.title,
       chapterContent: chapter.content,
+      comments,
+      totalComments: chapter.totalComments,
     };
   },
 });

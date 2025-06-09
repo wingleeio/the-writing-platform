@@ -3,6 +3,13 @@ import { v } from "convex/values";
 
 export default defineSchema({
   users: defineTable({
+    profile: v.optional(
+      v.object({
+        username: v.string(),
+        profilePicture: v.id("_storage"),
+        bio: v.string(),
+      })
+    ),
     authId: v.string(),
     totalBooks: v.number(),
     totalChapters: v.number(),
@@ -13,6 +20,7 @@ export default defineSchema({
     totalComments: v.number(),
     totalWords: v.number(),
   })
+    .index("by_profile_username", ["profile.username"])
     .index("by_auth_id", ["authId"])
     .index("by_total_books", ["totalBooks"])
     .index("by_total_chapters", ["totalChapters"])
@@ -77,7 +85,8 @@ export default defineSchema({
     .index("by_book", ["bookId"])
     .index("by_chapter", ["chapterId"])
     .index("by_author", ["authorId"])
-    .index("by_parent", ["parentId"]),
+    .index("by_parent", ["parentId"])
+    .index("by_chapter_parent", ["chapterId", "parentId"]),
   authorFollows: defineTable({
     followerId: v.id("users"),
     followingId: v.id("users"),

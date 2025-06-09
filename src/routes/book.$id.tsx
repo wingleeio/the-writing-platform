@@ -22,19 +22,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { formatNumber } from "@/lib/utils";
+import { formatNumber, generateUsername } from "@/lib/utils";
 import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/book/$id")({
   component: RouteComponent,
   loader: async ({ context, params }) => {
-    await context.queryClient.fetchQuery(
+    return context.queryClient.fetchQuery(
       convexQuery(api.books.getById, {
         id: params.id as Id<"books">,
       })
     );
   },
+  head: ({ loaderData }) => ({
+    meta: [
+      {
+        title: `${loaderData?.title} | The Writing Platform`,
+      },
+    ],
+  }),
 });
 
 function useBookData() {
@@ -47,63 +54,75 @@ function useBookData() {
 function RouteComponent() {
   const { data: book } = useBookData();
 
-  return match(book)
-    .with(P.nullish, () => null)
-    .with(P.nonNullable, (book) => (
-      <div className="flex flex-col gap-8 w-full md:max-w-4xl mx-auto md:border-x flex-1">
-        <div className="p-4 border-b flex items-center justify-between">
-          <h2 className="text-lg font-bold">{book.title}</h2>
-          <BookActions />
-        </div>
-        <div className="px-4 flex flex-col gap-4 sm:flex-row">
-          <img
-            src={book.coverImage}
-            alt={book.title}
-            width={100}
-            height={100}
-            className="w-64 h-96 object-cover rounded-md"
-          />
-          <div className="flex flex-col gap-2">
-            <h3 className="font-bold">Description</h3>
-            <p className="text-sm text-muted-foreground">{book.description}</p>
-            <div className="flex-1" />
-            <BookStats />
+  return (
+    <div className="flex flex-col gap-8 w-full md:max-w-4xl mx-auto md:border-x flex-1">
+      <div className="p-4 border-b flex items-center justify-between">
+        <div className="flex gap-2">
+          <div className="flex flex-col">
+            <h2 className="text-lg font-bold">{book.title}</h2>
+            <p className="text-sm text-muted-foreground">
+              by{" "}
+              <Link
+                to="/author/$id"
+                params={{ id: book.authorId }}
+                className="underline"
+              >
+                {book.author.profile?.username ??
+                  generateUsername(book.authorId)}
+              </Link>
+            </p>
           </div>
         </div>
-        <div>
-          <div className="border-y flex items-center justify-center p-4">
-            <div className="flex gap-4 bg-muted rounded-lg py-2 px-4 text-sm text-muted-foreground">
-              <Link
-                to="/book/$id"
-                params={{ id: book._id }}
-                activeOptions={{
-                  exact: true,
-                }}
-                activeProps={{
-                  className: "text-foreground",
-                }}
-              >
-                Chapters
-              </Link>
-              <Link
-                to="/book/$id/reviews"
-                params={{ id: book._id }}
-                activeOptions={{
-                  exact: true,
-                }}
-                activeProps={{
-                  className: "text-foreground",
-                }}
-              >
-                Reviews
-              </Link>
-            </div>
-          </div>
-          <Outlet />
+        <BookActions />
+      </div>
+      <div className="px-4 flex flex-col gap-4 sm:flex-row">
+        <img
+          src={book.coverImage}
+          alt={book.title}
+          width={100}
+          height={100}
+          className="w-64 h-96 object-cover rounded-md"
+        />
+        <div className="flex flex-col gap-2">
+          <h3 className="font-bold">Description</h3>
+          <p className="text-sm text-muted-foreground">{book.description}</p>
+          <div className="flex-1" />
+          <BookStats />
         </div>
       </div>
-    ))
-    .exhaustive();
+      <div>
+        <div className="border-y flex items-center justify-center p-4">
+          <div className="flex gap-4 bg-muted rounded-lg py-2 px-4 text-sm text-muted-foreground">
+            <Link
+              to="/book/$id"
+              params={{ id: book._id }}
+              activeOptions={{
+                exact: true,
+              }}
+              activeProps={{
+                className: "text-foreground",
+              }}
+            >
+              Chapters
+            </Link>
+            <Link
+              to="/book/$id/reviews"
+              params={{ id: book._id }}
+              activeOptions={{
+                exact: true,
+              }}
+              activeProps={{
+                className: "text-foreground",
+              }}
+            >
+              Reviews
+            </Link>
+          </div>
+        </div>
+        <Outlet />
+      </div>
+    </div>
+  );
 }
 
 function BookStats() {

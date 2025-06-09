@@ -1,23 +1,38 @@
+import { TextEditor } from "@/components/text-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { convexQuery } from "@convex-dev/react-query";
 import { useForm } from "@tanstack/react-form";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import z from "zod";
 
 export const Route = createFileRoute("/book_/$id/create")({
   component: RouteComponent,
+  loader: async ({ context, params }) => {
+    return context.queryClient.fetchQuery(
+      convexQuery(api.books.getById, { id: params.id as Id<"books"> })
+    );
+  },
 });
+
+function useBookData() {
+  const { id: bookId } = Route.useParams();
+  return useSuspenseQuery(
+    convexQuery(api.books.getById, { id: bookId as Id<"books"> })
+  );
+}
 
 function RouteComponent() {
   const navigate = useNavigate();
   const { id: bookId } = Route.useParams();
-  const book = useQuery(api.books.getById, { id: bookId as Id<"books"> });
+  const { data: book } = useBookData();
 
   const createChapter = useMutation(api.chapters.create);
   const form = useForm({
@@ -31,7 +46,10 @@ function RouteComponent() {
         title: value.title,
         content: value.content,
       });
-      await navigate({ to: "/book/$id", params: { id: bookId } });
+      await navigate({
+        to: "/book/$id/chapter/$chapterId",
+        params: { id: bookId, chapterId },
+      });
     },
     validators: {
       onChange: z.object({
@@ -51,7 +69,7 @@ function RouteComponent() {
       }}
     >
       <div className="p-4 border-b">
-        <h2 className="text-lg font-bold">Create chapter for {book?.title}</h2>
+        <h2 className="text-lg font-bold">Create chapter for {book.title}</h2>
       </div>
 
       <form.Field
@@ -73,16 +91,11 @@ function RouteComponent() {
       <form.Field
         name="content"
         children={(field) => (
-          <div className="flex flex-col gap-2 px-4">
-            <Label htmlFor="content">Content</Label>
-            <Textarea
-              id="content"
-              className="resize-none"
+          <div className="px-4">
+            <TextEditor
+              initialValue={field.state.value}
               placeholder="Write the content for your chapter"
-              rows={5}
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(e.target.value)}
+              onChange={(content) => field.handleChange(content)}
             />
           </div>
         )}

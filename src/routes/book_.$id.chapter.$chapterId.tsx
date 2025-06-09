@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
-import type { Id } from "convex/_generated/dataModel";
+import type { Doc, Id } from "convex/_generated/dataModel";
 import { match, P } from "ts-pattern";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -37,16 +37,25 @@ import { Check } from "lucide-react";
 import { useState } from "react";
 import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { formatNumber } from "@/lib/utils";
+import { CommentEditor } from "@/components/text-editor";
 
 export const Route = createFileRoute("/book_/$id/chapter/$chapterId")({
   component: RouteComponent,
   loader: async ({ context, params }) => {
-    await context.queryClient.fetchQuery(
+    return context.queryClient.fetchQuery(
       convexQuery(api.chapters.getPageDataById, {
         id: params.chapterId as Id<"chapters">,
       })
     );
   },
+  head: ({ loaderData }) => ({
+    meta: [
+      {
+        title: `${loaderData?.chapterNumber}. ${loaderData?.chapterTitle} | ${loaderData?.bookTitle}`,
+      },
+    ],
+  }),
 });
 
 function useChapterData() {
@@ -59,45 +68,61 @@ function useChapterData() {
 }
 
 function RouteComponent() {
+  return (
+    <div className="flex flex-col gap-8 w-full md:max-w-4xl mx-auto md:border-x flex-1">
+      <ChapterHeader />
+      <ChapterSwitcher />
+      <Separator />
+      <ChapterContent />
+      <Separator />
+      <ChapterSwitcher />
+      <Separator />
+      <CommentHeader />
+      <Separator />
+      <CommentForm />
+      <CommentList />
+    </div>
+  );
+}
+
+function ChapterHeader() {
   const { data } = useChapterData();
 
-  return match(data)
-    .with(P.nullish, () => <ChapterSkeleton />)
-    .with(P.nonNullable, (data) => (
-      <div className="flex flex-col gap-8 w-full md:max-w-4xl mx-auto md:border-x flex-1">
-        <div className="p-4 border-b flex items-center justify-between">
-          <div className="flex gap-2">
-            <div>
-              <h2 className="text-lg font-bold">{data.chapterNumber}.</h2>
-            </div>
-            <div className="flex flex-col">
-              <h2 className="text-lg font-bold">{data.chapterTitle}</h2>
-              <p className="text-sm text-muted-foreground">
-                <Link
-                  to="/book/$id"
-                  params={{ id: data.bookId }}
-                  className="underline"
-                >
-                  {data.bookTitle}
-                </Link>
-              </p>
-            </div>
-          </div>
-          <ChapterActions />
+  return (
+    <div className="p-4 border-b flex items-center justify-between">
+      <div className="flex gap-2">
+        <div>
+          <h2 className="text-lg font-bold">{data.chapterNumber}.</h2>
         </div>
-        <ChapterSwitcher />
-        <Separator />
-        <div className="px-4 flex flex-col gap-4 sm:flex-row">
-          <div className="flex-1 whitespace-pre-wrap">
-            {data.chapterContent}
-          </div>
+        <div className="flex flex-col">
+          <h2 className="text-lg font-bold">{data.chapterTitle}</h2>
+          <p className="text-sm text-muted-foreground">
+            <Link
+              to="/book/$id"
+              params={{ id: data.bookId }}
+              className="underline"
+            >
+              {data.bookTitle}
+            </Link>
+          </p>
         </div>
-        <Separator />
-        <ChapterSwitcher />
-        <Separator />
       </div>
-    ))
-    .exhaustive();
+      <ChapterActions />
+    </div>
+  );
+}
+
+function ChapterContent() {
+  const { data } = useChapterData();
+
+  return (
+    <div className="px-4 flex flex-col gap-4 sm:flex-row">
+      <div
+        className="flex-1 whitespace-pre-wrap prose dark:prose-invert w-full"
+        dangerouslySetInnerHTML={{ __html: data.chapterContent }}
+      />
+    </div>
+  );
 }
 
 function ChapterSwitcher() {
@@ -225,37 +250,50 @@ function ChapterActions() {
     .exhaustive();
 }
 
-function ChapterSkeleton() {
+function CommentHeader() {
+  const { data } = useChapterData();
+
   return (
-    <div className="flex flex-col gap-8 w-full md:max-w-4xl mx-auto md:border-x flex-1">
-      <div className="p-4 border-b flex items-center justify-between">
-        <Skeleton className="h-6 w-48" />
-        <div className="flex gap-4">
-          <Skeleton className="h-9 w-9" />
-          <Skeleton className="h-9 w-9" />
-        </div>
+    <div className="px-4 flex items-center gap-2">
+      <h2 className="text-lg font-bold">Comments</h2>
+      <div className="text-sm text-muted-foreground rounded-lg bg-muted px-3 py-1">
+        {formatNumber(data.totalComments)}
       </div>
-      <div className="flex items-center justify-center gap-4">
-        <Skeleton className="h-9 w-9" />
-        <Skeleton className="h-9 w-24" />
-        <Skeleton className="h-9 w-9" />
-      </div>
-      <Separator />
-      <div className="px-4 flex flex-col gap-4">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-4 w-5/6" />
-        <Skeleton className="h-4 w-2/3" />
-        <Skeleton className="h-4 w-4/5" />
-        <Skeleton className="h-4 w-3/4" />
-      </div>
-      <Separator />
-      <div className="flex items-center justify-center gap-4">
-        <Skeleton className="h-9 w-9" />
-        <Skeleton className="h-9 w-24" />
-        <Skeleton className="h-9 w-9" />
-      </div>
-      <Separator />
     </div>
   );
+}
+function CommentForm() {
+  const me = useQuery(api.users.getCurrent);
+  return match(me)
+    .with(P.nullish, () => null)
+    .with(P.nonNullable, () => (
+      <>
+        <CommentEditor placeholder="Add a comment..." />
+        <Separator />
+      </>
+    ))
+    .exhaustive();
+}
+
+function CommentList() {
+  const { data } = useChapterData();
+
+  return match(data.comments.length)
+    .with(0, () => (
+      <div className="px-4 py-8 flex justify-center">No comments yet.</div>
+    ))
+    .with(P.number, () =>
+      data.comments.map((comment) => (
+        <CommentItem key={comment._id} comment={comment} />
+      ))
+    )
+    .exhaustive();
+}
+
+function CommentItem({
+  comment,
+}: {
+  comment: Doc<"comments"> & { children: Doc<"comments">[] };
+}) {
+  return <div>{comment.content}</div>;
 }

@@ -33,6 +33,10 @@ export const Route = createRootRouteWithContext<RootContext>()({
     links: [
       {
         rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=IBM+Plex+Serif:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+      },
+      {
+        rel: "stylesheet",
         href: appCss,
       },
     ],
@@ -51,7 +55,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="dark">
+      <body className="dark flex flex-col min-h-screen">
         {children}
         <Scripts />
       </body>

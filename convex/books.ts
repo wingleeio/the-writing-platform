@@ -55,6 +55,21 @@ export const getById = query({
     id: v.id("books"),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const book = await ctx.db.get(args.id);
+
+    if (!book) {
+      throw new Error("Book not found");
+    }
+
+    const author = await ctx.db.get(book.authorId);
+
+    if (!author) {
+      throw new Error("Author not found");
+    }
+
+    return {
+      ...book,
+      author,
+    };
   },
 });
