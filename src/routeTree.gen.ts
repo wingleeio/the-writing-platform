@@ -17,11 +17,13 @@ import { Route as BookIdImport } from './routes/book.$id'
 import { Route as AuthorIdImport } from './routes/author.$id'
 import { Route as BookIdIndexImport } from './routes/book.$id.index'
 import { Route as AuthorIdIndexImport } from './routes/author.$id.index'
+import { Route as BookIdEditImport } from './routes/book_.$id.edit'
 import { Route as BookIdCreateImport } from './routes/book_.$id.create'
 import { Route as BookIdReviewsImport } from './routes/book.$id.reviews'
 import { Route as AuthorIdEditImport } from './routes/author.$id.edit'
 import { Route as AuthorIdBooksImport } from './routes/author.$id.books'
 import { Route as BookIdChapterChapterIdImport } from './routes/book_.$id.chapter.$chapterId'
+import { Route as BookIdChapterChapterIdEditImport } from './routes/book_.$id.chapter_.$chapterId.edit'
 
 // Create/Update Routes
 
@@ -61,6 +63,12 @@ const AuthorIdIndexRoute = AuthorIdIndexImport.update({
   getParentRoute: () => AuthorIdRoute,
 } as any)
 
+const BookIdEditRoute = BookIdEditImport.update({
+  id: '/book_/$id/edit',
+  path: '/book/$id/edit',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const BookIdCreateRoute = BookIdCreateImport.update({
   id: '/book_/$id/create',
   path: '/book/$id/create',
@@ -90,6 +98,14 @@ const BookIdChapterChapterIdRoute = BookIdChapterChapterIdImport.update({
   path: '/book/$id/chapter/$chapterId',
   getParentRoute: () => rootRoute,
 } as any)
+
+const BookIdChapterChapterIdEditRoute = BookIdChapterChapterIdEditImport.update(
+  {
+    id: '/book_/$id/chapter_/$chapterId/edit',
+    path: '/book/$id/chapter/$chapterId/edit',
+    getParentRoute: () => rootRoute,
+  } as any,
+)
 
 // Populate the FileRoutesByPath interface
 
@@ -151,6 +167,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookIdCreateImport
       parentRoute: typeof rootRoute
     }
+    '/book_/$id/edit': {
+      id: '/book_/$id/edit'
+      path: '/book/$id/edit'
+      fullPath: '/book/$id/edit'
+      preLoaderRoute: typeof BookIdEditImport
+      parentRoute: typeof rootRoute
+    }
     '/author/$id/': {
       id: '/author/$id/'
       path: '/'
@@ -170,6 +193,13 @@ declare module '@tanstack/react-router' {
       path: '/book/$id/chapter/$chapterId'
       fullPath: '/book/$id/chapter/$chapterId'
       preLoaderRoute: typeof BookIdChapterChapterIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/book_/$id/chapter_/$chapterId/edit': {
+      id: '/book_/$id/chapter_/$chapterId/edit'
+      path: '/book/$id/chapter/$chapterId/edit'
+      fullPath: '/book/$id/chapter/$chapterId/edit'
+      preLoaderRoute: typeof BookIdChapterChapterIdEditImport
       parentRoute: typeof rootRoute
     }
   }
@@ -215,9 +245,11 @@ export interface FileRoutesByFullPath {
   '/author/$id/edit': typeof AuthorIdEditRoute
   '/book/$id/reviews': typeof BookIdReviewsRoute
   '/book/$id/create': typeof BookIdCreateRoute
+  '/book/$id/edit': typeof BookIdEditRoute
   '/author/$id/': typeof AuthorIdIndexRoute
   '/book/$id/': typeof BookIdIndexRoute
   '/book/$id/chapter/$chapterId': typeof BookIdChapterChapterIdRoute
+  '/book/$id/chapter/$chapterId/edit': typeof BookIdChapterChapterIdEditRoute
 }
 
 export interface FileRoutesByTo {
@@ -227,9 +259,11 @@ export interface FileRoutesByTo {
   '/author/$id/edit': typeof AuthorIdEditRoute
   '/book/$id/reviews': typeof BookIdReviewsRoute
   '/book/$id/create': typeof BookIdCreateRoute
+  '/book/$id/edit': typeof BookIdEditRoute
   '/author/$id': typeof AuthorIdIndexRoute
   '/book/$id': typeof BookIdIndexRoute
   '/book/$id/chapter/$chapterId': typeof BookIdChapterChapterIdRoute
+  '/book/$id/chapter/$chapterId/edit': typeof BookIdChapterChapterIdEditRoute
 }
 
 export interface FileRoutesById {
@@ -242,9 +276,11 @@ export interface FileRoutesById {
   '/author/$id/edit': typeof AuthorIdEditRoute
   '/book/$id/reviews': typeof BookIdReviewsRoute
   '/book_/$id/create': typeof BookIdCreateRoute
+  '/book_/$id/edit': typeof BookIdEditRoute
   '/author/$id/': typeof AuthorIdIndexRoute
   '/book/$id/': typeof BookIdIndexRoute
   '/book_/$id/chapter/$chapterId': typeof BookIdChapterChapterIdRoute
+  '/book_/$id/chapter_/$chapterId/edit': typeof BookIdChapterChapterIdEditRoute
 }
 
 export interface FileRouteTypes {
@@ -258,9 +294,11 @@ export interface FileRouteTypes {
     | '/author/$id/edit'
     | '/book/$id/reviews'
     | '/book/$id/create'
+    | '/book/$id/edit'
     | '/author/$id/'
     | '/book/$id/'
     | '/book/$id/chapter/$chapterId'
+    | '/book/$id/chapter/$chapterId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -269,9 +307,11 @@ export interface FileRouteTypes {
     | '/author/$id/edit'
     | '/book/$id/reviews'
     | '/book/$id/create'
+    | '/book/$id/edit'
     | '/author/$id'
     | '/book/$id'
     | '/book/$id/chapter/$chapterId'
+    | '/book/$id/chapter/$chapterId/edit'
   id:
     | '__root__'
     | '/'
@@ -282,9 +322,11 @@ export interface FileRouteTypes {
     | '/author/$id/edit'
     | '/book/$id/reviews'
     | '/book_/$id/create'
+    | '/book_/$id/edit'
     | '/author/$id/'
     | '/book/$id/'
     | '/book_/$id/chapter/$chapterId'
+    | '/book_/$id/chapter_/$chapterId/edit'
   fileRoutesById: FileRoutesById
 }
 
@@ -294,7 +336,9 @@ export interface RootRouteChildren {
   BookIdRoute: typeof BookIdRouteWithChildren
   BookCreateRoute: typeof BookCreateRoute
   BookIdCreateRoute: typeof BookIdCreateRoute
+  BookIdEditRoute: typeof BookIdEditRoute
   BookIdChapterChapterIdRoute: typeof BookIdChapterChapterIdRoute
+  BookIdChapterChapterIdEditRoute: typeof BookIdChapterChapterIdEditRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -303,7 +347,9 @@ const rootRouteChildren: RootRouteChildren = {
   BookIdRoute: BookIdRouteWithChildren,
   BookCreateRoute: BookCreateRoute,
   BookIdCreateRoute: BookIdCreateRoute,
+  BookIdEditRoute: BookIdEditRoute,
   BookIdChapterChapterIdRoute: BookIdChapterChapterIdRoute,
+  BookIdChapterChapterIdEditRoute: BookIdChapterChapterIdEditRoute,
 }
 
 export const routeTree = rootRoute
@@ -321,7 +367,9 @@ export const routeTree = rootRoute
         "/book/$id",
         "/book/create",
         "/book_/$id/create",
-        "/book_/$id/chapter/$chapterId"
+        "/book_/$id/edit",
+        "/book_/$id/chapter/$chapterId",
+        "/book_/$id/chapter_/$chapterId/edit"
       ]
     },
     "/": {
@@ -360,6 +408,9 @@ export const routeTree = rootRoute
     "/book_/$id/create": {
       "filePath": "book_.$id.create.tsx"
     },
+    "/book_/$id/edit": {
+      "filePath": "book_.$id.edit.tsx"
+    },
     "/author/$id/": {
       "filePath": "author.$id.index.tsx",
       "parent": "/author/$id"
@@ -370,6 +421,9 @@ export const routeTree = rootRoute
     },
     "/book_/$id/chapter/$chapterId": {
       "filePath": "book_.$id.chapter.$chapterId.tsx"
+    },
+    "/book_/$id/chapter_/$chapterId/edit": {
+      "filePath": "book_.$id.chapter_.$chapterId.edit.tsx"
     }
   }
 }

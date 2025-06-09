@@ -201,20 +201,24 @@ triggers.register("chapters", async (ctx, change) => {
       }
     })
     .with({ operation: "update" }, async (change) => {
+      const wordCountDiff = change.newDoc.totalWords - change.oldDoc.totalWords;
+      if (wordCountDiff === 0) return;
+
       const book = await ctx.db.get(change.newDoc.bookId);
       if (book) {
         await ctx.db.patch(book._id, {
-          totalWords: book.totalWords + change.newDoc.totalWords,
+          totalWords: book.totalWords + wordCountDiff,
         });
       }
+
       const author = await ctx.db.get(change.newDoc.authorId);
       if (author) {
         await ctx.db.patch(author._id, {
-          totalWords: author.totalWords + change.newDoc.totalWords,
+          totalWords: author.totalWords + wordCountDiff,
         });
       }
     })
-    .run();
+    .exhaustive();
 });
 
 triggers.register("reviews", async (ctx, change) => {
@@ -321,7 +325,10 @@ triggers.register("books", async (ctx, change) => {
         await ctx.db.delete(activity._id);
       }
     })
-    .run();
+    .with({ operation: "update" }, async (change) => {
+      // No additional actions needed for book updates
+    })
+    .exhaustive();
 });
 
 triggers.register("reviewLikes", async (ctx, change) => {

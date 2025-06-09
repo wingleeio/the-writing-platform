@@ -85,3 +85,68 @@ export const getByAuthorId = query({
       .collect();
   },
 });
+
+export const removeBook = mutation({
+  args: {
+    id: v.id("books"),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.auth.getUserIdentity();
+
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    const book = await ctx.db.get(args.id);
+
+    if (!book) {
+      throw new Error("Book not found");
+    }
+
+    const author = await ctx.runQuery(internal.users.getByAuthId, {
+      authId: user.subject,
+    });
+
+    if (!author || author._id !== book.authorId) {
+      throw new Error("Unauthorized");
+    }
+
+    await ctx.db.delete(args.id);
+  },
+});
+
+export const update = mutation({
+  args: {
+    id: v.id("books"),
+    title: v.string(),
+    description: v.string(),
+    coverImage: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.auth.getUserIdentity();
+
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    const book = await ctx.db.get(args.id);
+
+    if (!book) {
+      throw new Error("Book not found");
+    }
+
+    const author = await ctx.runQuery(internal.users.getByAuthId, {
+      authId: user.subject,
+    });
+
+    if (!author || author._id !== book.authorId) {
+      throw new Error("Unauthorized");
+    }
+
+    await ctx.db.patch(args.id, {
+      title: args.title,
+      description: args.description,
+      coverImage: args.coverImage,
+    });
+  },
+});

@@ -1,6 +1,11 @@
-import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useNavigate,
+} from "@tanstack/react-router";
 import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 
 import type { Id } from "convex/_generated/dataModel";
 import { match, P } from "ts-pattern";
@@ -21,9 +26,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { formatNumber, generateUsername } from "@/lib/utils";
 import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { ShareModal } from "@/components/share-modal";
 
 export const Route = createFileRoute("/book/$id")({
   component: RouteComponent,
@@ -174,6 +189,16 @@ function BookStats() {
 function BookActions() {
   const me = useQuery(api.users.getCurrent);
   const { data: book } = useBookData();
+  const navigate = useNavigate();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const deleteBook = useMutation(api.books.removeBook);
+
+  const handleDelete = async () => {
+    if (!book) return;
+    await deleteBook({ id: book._id });
+    navigate({ to: "/" });
+  };
 
   return match(me)
     .with(P.nullish, () => null)
@@ -197,22 +222,59 @@ function BookActions() {
                 },
                 ({ book }) => (
                   <>
-                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/book/$id/edit" params={{ id: book._id }}>
+                        Edit
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/book/$id/create" params={{ id: book._id }}>
                         Add Chapter
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>Delete</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
+                      Delete
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </>
                 )
               )
               .otherwise(() => null)}
-            <DropdownMenuItem>Share</DropdownMenuItem>
-            <DropdownMenuItem>Report</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowShareDialog(true)}>
+              Share
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Book</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this book? This action cannot be
+                undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <ShareModal
+          open={showShareDialog}
+          onOpenChange={setShowShareDialog}
+          url={window.location.href}
+          title="Book"
+        />
       </div>
     ))
     .exhaustive();

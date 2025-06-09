@@ -7,34 +7,40 @@ import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { Id } from "convex/_generated/dataModel";
 
-export const Route = createFileRoute("/book_/$id/create")({
+export const Route = createFileRoute("/book_/$id/chapter_/$chapterId/edit")({
   component: RouteComponent,
   loader: async ({ context, params }) => {
     return context.queryClient.fetchQuery(
-      convexQuery(api.books.getById, { id: params.id as Id<"books"> })
+      convexQuery(api.chapters.getForEdit, {
+        id: params.chapterId as Id<"chapters">,
+      })
     );
   },
 });
 
-function useBookData() {
-  const { id: bookId } = Route.useParams();
+function useChapterData() {
+  const { chapterId } = Route.useParams();
   return useSuspenseQuery(
-    convexQuery(api.books.getById, { id: bookId as Id<"books"> })
+    convexQuery(api.chapters.getForEdit, { id: chapterId as Id<"chapters"> })
   );
 }
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const { id: bookId } = Route.useParams();
-  const { data: book } = useBookData();
-  const createChapter = useMutation(api.chapters.create);
+  const { id: bookId, chapterId } = Route.useParams();
+  const { data: chapter } = useChapterData();
+  const updateChapter = useMutation(api.chapters.update);
 
   return (
     <ChapterForm
-      title={`Create chapter for ${book.title}`}
+      title="Edit chapter"
+      defaultValues={{
+        title: chapter.title,
+        content: chapter.content,
+      }}
       onSubmit={async (values) => {
-        const chapterId = await createChapter({
-          bookId: bookId as Id<"books">,
+        await updateChapter({
+          id: chapterId as Id<"chapters">,
           ...values,
         });
         await navigate({
@@ -42,6 +48,7 @@ function RouteComponent() {
           params: { id: bookId, chapterId },
         });
       }}
+      submitLabel="Save changes"
     />
   );
 }

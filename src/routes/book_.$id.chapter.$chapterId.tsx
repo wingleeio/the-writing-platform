@@ -42,6 +42,16 @@ import { CommentEditor } from "@/components/text-editor";
 import { useForm } from "@tanstack/react-form";
 import z from "zod";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useNavigate } from "@tanstack/react-router";
+import { ShareModal } from "@/components/share-modal";
 
 export const Route = createFileRoute("/book_/$id/chapter/$chapterId")({
   component: RouteComponent,
@@ -221,6 +231,19 @@ function ChapterActions() {
   const me = useQuery(api.users.getCurrent);
   const { data } = useChapterData();
   const toggleLike = useMutation(api.chapters.toggleLike);
+  const navigate = useNavigate();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const deleteChapter = useMutation(api.chapters.removeChapter);
+
+  const handleDelete = async () => {
+    await deleteChapter({ id: data.chapterId });
+    await navigate({
+      to: "/book/$id",
+      params: { id: data.bookId },
+    });
+  };
+
   return match(me)
     .with(P.nullish, () => null)
     .with(P.nonNullable, (me) => (
@@ -245,16 +268,57 @@ function ChapterActions() {
             {match(me._id === data.authorId)
               .with(true, () => (
                 <>
-                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                  <DropdownMenuItem>Delete</DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to="/book/$id/chapter/$chapterId/edit"
+                      params={{ id: data.bookId, chapterId: data.chapterId }}
+                    >
+                      Edit
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
+                    Delete
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </>
               ))
               .otherwise(() => null)}
-            <DropdownMenuItem>Share</DropdownMenuItem>
-            <DropdownMenuItem>Report</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowShareDialog(true)}>
+              Share
+            </DropdownMenuItem>
+            {/* <DropdownMenuItem>Report</DropdownMenuItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Chapter</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this chapter? This action cannot
+                be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <ShareModal
+          open={showShareDialog}
+          onOpenChange={setShowShareDialog}
+          url={window.location.href}
+          title="Chapter"
+        />
       </div>
     ))
     .exhaustive();

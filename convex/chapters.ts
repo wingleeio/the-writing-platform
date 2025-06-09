@@ -135,6 +135,41 @@ export const getById = query({
   },
 });
 
+export const getForEdit = query({
+  args: {
+    id: v.id("chapters"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    const chapter = await ctx.db.get(args.id);
+    if (!chapter) {
+      throw new Error("Chapter not found");
+    }
+
+    const book = await ctx.runQuery(api.books.getById, {
+      id: chapter.bookId,
+    });
+
+    if (!book) {
+      throw new Error("Book not found");
+    }
+
+    const author = await ctx.runQuery(internal.users.getByAuthId, {
+      authId: identity.subject,
+    });
+
+    if (!author || author._id !== book.authorId) {
+      throw new Error("Unauthorized");
+    }
+
+    return chapter;
+  },
+});
+
 export const getPageDataById = query({
   args: {
     id: v.id("chapters"),
@@ -244,5 +279,95 @@ export const getPageDataById = query({
       likedByMe,
       totalLikes: chapter.totalLikes,
     };
+  },
+});
+
+export const update = mutation({
+  args: {
+    id: v.id("chapters"),
+    title: v.string(),
+    content: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    const chapter = await ctx.db.get(args.id);
+
+    if (!chapter) {
+      throw new Error("Chapter not found");
+    }
+
+    const author = await ctx.runQuery(internal.users.getByAuthId, {
+      authId: identity.subject,
+    });
+
+    if (!author || author._id !== chapter.authorId) {
+      throw new Error("Unauthorized");
+    }
+
+    const oldWordCount = chapter.totalWords;
+    const newWordCount = args.content.split(" ").length;
+    const wordCountDiff = newWordCount - oldWordCount;
+
+    await ctx.db.patch(args.id, {
+      title: args.title,
+      content: sanitizeHtml(args.content, {
+        allowedTags: ["b", "i", "u", "s", "strike", "p", "strong", "em", "br"],
+      }),
+      totalWords: newWordCount,
+    });
+
+    // Update book and author word counts
+    const book = await ctx.db.get(chapter.bookId);
+    if (book) {
+      await ctx.db.patch(book._id, {
+        totalWords: book.totalWords + wordCountDiff,
+      });
+    }
+
+    if (author) {
+      await ctx.db.patch(author._id, {
+        totalWords: author.totalWords + wordCountDiff,
+      });
+    }
+  },
+});
+
+export const removeChapter = mutation({
+  args: {
+    id: v.id("chapters"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    const chapter = await ctx.db.get(args.id);
+    if (!chapter) {
+      throw new Error("Chapter not found");
+    }
+
+    const book = await ctx.runQuery(api.books.getById, {
+      id: chapter.bookId,
+    });
+
+    if (!book) {
+      throw new Error("Book not found");
+    }
+
+    const author = await ctx.runQuery(internal.users.getByAuthId, {
+      authId: identity.subject,
+    });
+
+    if (!author || author._id !== book.authorId) {
+      throw new Error("Unauthorized");
+    }
+
+    await ctx.db.delete(args.id);
   },
 });
