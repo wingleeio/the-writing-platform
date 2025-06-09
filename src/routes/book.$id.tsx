@@ -99,7 +99,9 @@ function RouteComponent() {
         />
         <div className="flex flex-col gap-2">
           <h3 className="font-bold">Description</h3>
-          <p className="text-sm text-muted-foreground">{book.description}</p>
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+            {book.description}
+          </p>
           <div className="flex-1" />
           <BookStats />
         </div>
