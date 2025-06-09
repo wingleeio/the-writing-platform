@@ -112,30 +112,52 @@ function AuthorStats({
   author: Doc<"users"> & { followedByMe: boolean };
 }) {
   return (
-    <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-      <div className="flex items-center gap-1.5">
-        <BookOpen className="w-4 h-4" />
-        <span>{formatNumber(author.totalBooks)} books</span>
+    <div className="flex flex-wrap gap-2">
+      <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+        <span className="text-primary">
+          <BookOpen className="w-4 h-4" />
+        </span>
+        <span className="font-medium">{formatNumber(author.totalBooks)}</span>
+        <span className="text-muted-foreground/80">books</span>
       </div>
-      <div className="flex items-center gap-1.5">
-        <FileText className="w-4 h-4" />
-        <span>{formatNumber(author.totalWords)} words</span>
+      <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+        <span className="text-primary">
+          <FileText className="w-4 h-4" />
+        </span>
+        <span className="font-medium">{formatNumber(author.totalWords)}</span>
+        <span className="text-muted-foreground/80">words</span>
       </div>
-      <div className="flex items-center gap-1.5">
-        <Star className="w-4 h-4" />
-        <span>{formatNumber(author.totalReviews)} reviews</span>
+      <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+        <span className="text-primary">
+          <Star className="w-4 h-4" />
+        </span>
+        <span className="font-medium">{formatNumber(author.totalReviews)}</span>
+        <span className="text-muted-foreground/80">reviews</span>
       </div>
-      <div className="flex items-center gap-1.5">
-        <Heart className="w-4 h-4" />
-        <span>{formatNumber(author.totalLikes)} likes</span>
+      <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+        <span className="text-primary">
+          <Heart className="w-4 h-4" />
+        </span>
+        <span className="font-medium">{formatNumber(author.totalLikes)}</span>
+        <span className="text-muted-foreground/80">likes</span>
       </div>
-      <div className="flex items-center gap-1.5">
-        <MessageSquare className="w-4 h-4" />
-        <span>{formatNumber(author.totalComments)} comments</span>
+      <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+        <span className="text-primary">
+          <MessageSquare className="w-4 h-4" />
+        </span>
+        <span className="font-medium">
+          {formatNumber(author.totalComments)}
+        </span>
+        <span className="text-muted-foreground/80">comments</span>
       </div>
-      <div className="flex items-center gap-1.5">
-        <Users className="w-4 h-4" />
-        <span>{formatNumber(author.totalFollowers)} followers</span>
+      <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+        <span className="text-primary">
+          <Users className="w-4 h-4" />
+        </span>
+        <span className="font-medium">
+          {formatNumber(author.totalFollowers)}
+        </span>
+        <span className="text-muted-foreground/80">followers</span>
       </div>
     </div>
   );

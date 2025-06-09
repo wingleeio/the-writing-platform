@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { api } from "convex/_generated/api";
 import { useQuery } from "convex/react";
-import { BookOpen, Heart, MessageSquare, BookX } from "lucide-react";
+import { BookOpen, Heart, MessageSquare, BookX, FileText } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 import type { Id } from "convex/_generated/dataModel";
 import { Link } from "@tanstack/react-router";
@@ -54,18 +54,42 @@ function RouteComponent() {
             <p className="text-muted-foreground text-sm line-clamp-2">
               {book.description}
             </p>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-auto">
-              <div className="flex items-center gap-1">
-                <BookOpen className="w-4 h-4" />
-                <span>{formatNumber(book.totalChapters)} chapters</span>
+            <div className="flex flex-wrap gap-2 mt-auto">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+                <span className="text-primary">
+                  <BookOpen className="w-4 h-4" />
+                </span>
+                <span className="font-medium">
+                  {formatNumber(book.totalChapters)}
+                </span>
+                <span className="text-muted-foreground/80">chapters</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Heart className="w-4 h-4" />
-                <span>{formatNumber(book.totalLikes)} likes</span>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+                <span className="text-primary">
+                  <FileText className="w-4 h-4" />
+                </span>
+                <span className="font-medium">
+                  {formatNumber(book.totalWords)}
+                </span>
+                <span className="text-muted-foreground/80">words</span>
               </div>
-              <div className="flex items-center gap-1">
-                <MessageSquare className="w-4 h-4" />
-                <span>{formatNumber(book.totalComments)} comments</span>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+                <span className="text-primary">
+                  <Heart className="w-4 h-4" />
+                </span>
+                <span className="font-medium">
+                  {formatNumber(book.totalLikes)}
+                </span>
+                <span className="text-muted-foreground/80">likes</span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+                <span className="text-primary">
+                  <MessageSquare className="w-4 h-4" />
+                </span>
+                <span className="font-medium">
+                  {formatNumber(book.totalComments)}
+                </span>
+                <span className="text-muted-foreground/80">comments</span>
               </div>
             </div>
           </div>

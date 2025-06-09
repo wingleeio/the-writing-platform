@@ -147,41 +147,52 @@ function BookStats() {
   return match(book)
     .with(P.nullish, () => null)
     .with(P.nonNullable, (book) => (
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-        <div className="flex flex-col items-center rounded-lg border bg-card p-2 text-center">
-          <BookOpen className="mb-1 h-4 w-4 text-muted-foreground" />
-          <p className="text-lg font-bold">
+      <div className="flex flex-wrap gap-2">
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+          <span className="text-primary">
+            <BookOpen className="w-4 h-4" />
+          </span>
+          <span className="font-medium">
             {formatNumber(book.totalChapters)}
-          </p>
-          <p className="text-xs text-muted-foreground">Chapters</p>
+          </span>
+          <span className="text-muted-foreground/80">chapters</span>
         </div>
-        <div className="flex flex-col items-center rounded-lg border bg-card p-2 text-center">
-          <Star className="mb-1 h-4 w-4 text-muted-foreground" />
-          <p className="text-lg font-bold">{formatNumber(book.totalReviews)}</p>
-          <p className="text-xs text-muted-foreground">Reviews</p>
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+          <span className="text-primary">
+            <Star className="w-4 h-4" />
+          </span>
+          <span className="font-medium">{formatNumber(book.totalReviews)}</span>
+          <span className="text-muted-foreground/80">reviews</span>
         </div>
-        <div className="flex flex-col items-center rounded-lg border bg-card p-2 text-center">
-          <Heart className="mb-1 h-4 w-4 text-muted-foreground" />
-          <p className="text-lg font-bold">{formatNumber(book.totalLikes)}</p>
-          <p className="text-xs text-muted-foreground">Likes</p>
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+          <span className="text-primary">
+            <Heart className="w-4 h-4" />
+          </span>
+          <span className="font-medium">{formatNumber(book.totalLikes)}</span>
+          <span className="text-muted-foreground/80">likes</span>
         </div>
-        <div className="flex flex-col items-center rounded-lg border bg-card p-2 text-center">
-          <MessageSquare className="mb-1 h-4 w-4 text-muted-foreground" />
-          <p className="text-lg font-bold">
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+          <span className="text-primary">
+            <MessageSquare className="w-4 h-4" />
+          </span>
+          <span className="font-medium">
             {formatNumber(book.totalComments)}
-          </p>
-          <p className="text-xs text-muted-foreground">Comments</p>
+          </span>
+          <span className="text-muted-foreground/80">comments</span>
         </div>
-
-        <div className="flex flex-col items-center rounded-lg border bg-card p-2 text-center">
-          <Users className="mb-1 h-4 w-4 text-muted-foreground" />
-          <p className="text-lg font-bold">{formatNumber(book.totalFollows)}</p>
-          <p className="text-xs text-muted-foreground">Followers</p>
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+          <span className="text-primary">
+            <Users className="w-4 h-4" />
+          </span>
+          <span className="font-medium">{formatNumber(book.totalFollows)}</span>
+          <span className="text-muted-foreground/80">followers</span>
         </div>
-        <div className="flex flex-col items-center rounded-lg border bg-card p-2 text-center">
-          <FileText className="mb-1 h-4 w-4 text-muted-foreground" />
-          <p className="text-lg font-bold">{formatNumber(book.totalWords)}</p>
-          <p className="text-xs text-muted-foreground">Words</p>
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted">
+          <span className="text-primary">
+            <FileText className="w-4 h-4" />
+          </span>
+          <span className="font-medium">{formatNumber(book.totalWords)}</span>
+          <span className="text-muted-foreground/80">words</span>
         </div>
       </div>
     ))
