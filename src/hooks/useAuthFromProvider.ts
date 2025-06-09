@@ -1,26 +1,38 @@
-import { useAuth } from "@workos-inc/authkit-react";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { getAccessToken } from "@/lib/auth";
+import type { RootContext } from "@/routes/__root";
+import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 
-export function useAuthFromProvider() {
-  const workos = useAuth();
-
-  const fetchAccessToken = useCallback(
-    async (args: { forceRefreshToken?: boolean }) => {
-      const accessToken = await workos.getAccessToken({
-        forceRefresh: args.forceRefreshToken,
-      });
-
+export async function ensureAuth(context: RootContext) {
+  await context.queryClient.ensureQueryData({
+    queryKey: ["access-token"],
+    queryFn: async () => {
+      const accessToken = await getAccessToken();
       return accessToken;
     },
-    [workos.getAccessToken]
-  );
+  });
+}
+
+export function useAuthFromProvider() {
+  const query = useQuery({
+    queryKey: ["access-token"],
+    queryFn: async () => {
+      const accessToken = await getAccessToken();
+      return accessToken;
+    },
+  });
+
+  const fetchAccessToken = useCallback(async () => {
+    return getAccessToken();
+  }, []);
 
   return useMemo(
     () => ({
-      isLoading: workos.isLoading,
-      isAuthenticated: Boolean(workos.user),
+      isLoading: query.isLoading,
+      isAuthenticated: Boolean(query.data),
       fetchAccessToken,
     }),
-    [fetchAccessToken, workos.isLoading, workos.user]
+    [fetchAccessToken, query.data, query.isLoading]
   );
 }

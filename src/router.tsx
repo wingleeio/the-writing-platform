@@ -46,14 +46,14 @@ export const createRouter = () => {
     Wrap(props) {
       return (
         <AuthKitProvider clientId={WORKOS_CLIENT_ID}>
-          <ConvexProviderWithAuth
-            client={convexClient}
-            useAuth={useAuthFromProvider}
-          >
-            <QueryClientProvider client={queryClient}>
+          <QueryClientProvider client={queryClient}>
+            <ConvexProviderWithAuth
+              client={convexClient}
+              useAuth={useAuthFromProvider}
+            >
               {props.children}
-            </QueryClientProvider>
-          </ConvexProviderWithAuth>
+            </ConvexProviderWithAuth>
+          </QueryClientProvider>
         </AuthKitProvider>
       );
     },

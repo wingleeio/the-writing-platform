@@ -8,11 +8,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { generateUsername } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
-import { useAuth } from "@workos-inc/authkit-react";
-import { api } from "convex/_generated/api";
-import { useQuery } from "convex/react";
+
 import { PlusIcon } from "lucide-react";
 import { match, P } from "ts-pattern";
 
@@ -32,16 +32,20 @@ export function Header() {
 }
 
 function UserMenu() {
-  const auth = useAuth();
-  const me = useQuery(api.users.getCurrent);
-
-  return match(auth)
-    .with({ user: P.nullish }, ({ signIn }) => (
-      <Button size="sm" onClick={() => signIn()}>
-        Login
+  const me = useCurrentUser();
+  return match(me)
+    .with({ isLoading: true }, () => (
+      <div className="flex flex-row gap-4 items-center">
+        <Skeleton className="h-9 w-24" />
+        <Skeleton className="h-8 w-8 rounded-full" />
+      </div>
+    ))
+    .with({ data: P.nullish }, () => (
+      <Button size="sm" asChild>
+        <a href="/api/auth/login">Login</a>
       </Button>
     ))
-    .with({ user: P.nonNullable }, ({ signOut }) => (
+    .with({ data: P.nonNullable }, (me) => (
       <div className="flex flex-row gap-4 items-center">
         <Button variant="outline" className="relative" size="sm" asChild>
           <Link to="/book/create">
@@ -52,10 +56,12 @@ function UserMenu() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative w-8 h-8 rounded-full">
               <Avatar>
-                <AvatarImage src={me?.profile?.profilePicture ?? undefined} />
+                <AvatarImage
+                  src={me.data.profile?.profilePicture ?? undefined}
+                />
                 <AvatarFallback>
-                  {me &&
-                    (me?.profile?.username ?? generateUsername(me?._id))
+                  {me.data &&
+                    (me.data.profile?.username ?? generateUsername(me.data._id))
                       .slice(0, 1)
                       .toUpperCase()}
                 </AvatarFallback>
@@ -66,14 +72,14 @@ function UserMenu() {
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             {me && (
               <DropdownMenuItem asChild>
-                <Link to="/author/$id" params={{ id: me?._id }}>
+                <Link to="/author/$id" params={{ id: me.data._id }}>
                   Profile
                 </Link>
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut()}>
-              Logout
+            <DropdownMenuItem asChild>
+              <a href="/api/auth/logout">Logout</a>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

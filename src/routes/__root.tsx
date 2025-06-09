@@ -9,8 +9,9 @@ import { Header } from "@/components/header";
 import type { ConvexQueryClient } from "@convex-dev/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import type { ConvexReactClient } from "convex/react";
-
-interface RootContext {
+import { ensureCurrentUser } from "@/hooks/useCurrentUser";
+import { ensureAuth } from "@/hooks/useAuthFromProvider";
+export interface RootContext {
   queryClient: QueryClient;
   convexClient: ConvexReactClient;
   convexQueryClient: ConvexQueryClient;
@@ -41,6 +42,10 @@ export const Route = createRootRouteWithContext<RootContext>()({
       },
     ],
   }),
+  loader: async ({ context }) => {
+    await ensureAuth(context);
+    await ensureCurrentUser(context);
+  },
   component: () => (
     <RootDocument>
       <Header />
